@@ -1,6 +1,7 @@
 import { RARITY_LABELS, type PlantInstance } from '../types/plant.ts';
 import type { Garden, GardenStats } from '../types/garden.ts';
 import type { GardenService } from '../garden/gardenService.ts';
+import { PLANT_DEFINITIONS } from '../garden/plantDefinitions.ts';
 import { calculateStats, plantsToNextLevel } from '../garden/gardenStats.ts';
 import {
 	evaluateAchievements,
@@ -10,6 +11,7 @@ import {
 
 export interface PlantViewModel {
 	instanceId: string;
+	speciesId: string;
 	name: string;
 	rarity: PlantInstance['rarity'];
 	rarityLabel: string;
@@ -54,10 +56,22 @@ export interface GardenViewModel {
 	projectName: string;
 	projects: ProjectOption[];
 	plants: PlantViewModel[];
+	catalogue: SpeciesViewModel[];
 	summary: GardenSummaryViewModel;
 	achievements: AchievementView[];
 	hasGitHistory: boolean;
 	emptyMessage: string | null;
+}
+
+export interface SpeciesViewModel {
+	id: string;
+	name: string;
+	glyph: PlantInstance['glyph'];
+	rarity: PlantInstance['rarity'];
+	rarityLabel: string;
+	description: string;
+	conditionLabel: string;
+	count: number;
 }
 
 /** Resolve the selection against current folders so a stale selection cannot hide an open project. */
@@ -91,6 +105,7 @@ export function serializeGarden(garden: Garden, projects: readonly ProjectOption
 		projectName: garden.projectName,
 		projects: projects.map((project) => ({ ...project })),
 		plants,
+		catalogue: serializeCatalogue(garden.plants),
 		summary: serializeStats(stats),
 		achievements: evaluateAchievements(stats, garden.plants),
 		hasGitHistory: garden.processedCommits.length > 0,
@@ -104,11 +119,25 @@ export function createEmptyViewModel(projects: readonly ProjectOption[] = []): G
 		projectName: '',
 		projects: projects.map((project) => ({ ...project })),
 		plants: [],
+		catalogue: serializeCatalogue([]),
 		summary: serializeStats(calculateStats(emptyGarden())),
 		achievements: evaluateAchievements(calculateStats(emptyGarden()), []),
 		hasGitHistory: false,
 		emptyMessage: 'Open a folder to start a garden.',
 	};
+}
+
+function serializeCatalogue(plants: readonly PlantInstance[]): SpeciesViewModel[] {
+	return PLANT_DEFINITIONS.map((definition) => ({
+		id: definition.id,
+		name: definition.name,
+		glyph: definition.glyph,
+		rarity: definition.rarity,
+		rarityLabel: RARITY_LABELS[definition.rarity],
+		description: definition.description,
+		conditionLabel: definition.conditionLabel,
+		count: plants.filter((plant) => plant.speciesId === definition.id).length,
+	}));
 }
 
 export function serializeStats(stats: GardenStats): GardenSummaryViewModel {
@@ -144,6 +173,7 @@ function emptyGarden(): Garden {
 export function serializePlant(plant: PlantInstance, projectName: string): PlantViewModel {
 	return {
 		instanceId: plant.instanceId,
+		speciesId: plant.speciesId,
 		name: plant.name,
 		rarity: plant.rarity,
 		rarityLabel: RARITY_LABELS[plant.rarity],

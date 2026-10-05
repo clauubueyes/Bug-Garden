@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { createHistoryReader } from './git/historyReader.ts';
 import { createGardenService } from './garden/gardenService.ts';
 import { createStorageService } from './storage/storageService.ts';
+import { createGardenPreferencesStore } from './storage/gardenPreferences.ts';
 import { findRepositoryRoot, readHeadSha } from './git/gitCli.ts';
 import { HeadTracker } from './git/headTracker.ts';
 import { watchWorkspaceHead } from './git/commitWatcher.ts';
@@ -33,6 +34,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
 	const viewProvider: GardenViewProvider = new GardenViewProvider(context.extensionUri, {
 		gardenService,
+		preferences: createGardenPreferencesStore(context.workspaceState),
 		getActiveProjectId: () => activeProjectId,
 		getProjects: () => listProjects(),
 		onProjectSelected: (projectId) => {
@@ -47,6 +49,9 @@ export function activate(context: vscode.ExtensionContext): void {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bugGarden.showGarden', async () => {
 			await vscode.commands.executeCommand(`${VIEW_ID}.focus`);
+		}),
+		vscode.commands.registerCommand('bugGarden.openGardenPanel', () => {
+			viewProvider.openPanel();
 		}),
 		vscode.commands.registerCommand('bugGarden.refreshGarden', async () => {
 			await refresh();

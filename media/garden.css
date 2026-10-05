@@ -1,282 +1,262 @@
 :root {
-	--bg: transparent;
-	--soil: #3a2f27;
-	--soil-light: #4c3d31;
-	--text: var(--vscode-foreground);
-	--muted: var(--vscode-descriptionForeground, #a0a0a0);
-	--border: var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
-	--surface: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.1));
-	--common: #7fb069;
-	--rare: #4a9fe0;
-	--epic: #a970d8;
-	--legendary: #e0a33e;
-	--rare-soft: rgba(74, 159, 224, 0.16);
-	--epic-soft: rgba(169, 112, 216, 0.16);
-	--legendary-soft: rgba(224, 163, 62, 0.18);
+	color-scheme: light;
+	--text: #35493a;
+	--muted: #68766a;
+	--bg: #f7f6ef;
+	--surface: #fffef9;
+	--soft: #eeefe4;
+	--border: #dfe3d4;
+	--green: #486d45;
+	--green-soft: #e6eddc;
+	--focus: var(--vscode-focusBorder, #547742);
+	--common: #547944;
+	--rare: #47798e;
+	--epic: #8b6796;
+	--legendary: #9b742b;
 }
-
-* {
-	box-sizing: border-box;
+body.vscode-dark {
+	color-scheme: dark;
+	--text: #e1e7d8;
+	--muted: #a2b09f;
+	--bg: #202820;
+	--surface: #283228;
+	--soft: #303c2f;
+	--border: #3b4939;
+	--green: #bed5a2;
+	--green-soft: #364a32;
+	--common: #bdd6a0;
+	--rare: #a2cadb;
+	--epic: #d4b5df;
+	--legendary: #edce8b;
 }
-
-body {
-	margin: 0;
-	padding: 0;
-	color: var(--text);
-	font-family: var(--vscode-font-family);
-	font-size: var(--vscode-font-size);
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.5 var(--vscode-font-family, 'Segoe UI', sans-serif); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .45; }
+button, input, select { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+h1, h2, h3, p { margin: 0; }
+svg { display: block; width: 100%; height: 100%; }
+.icon { display: inline-flex; width: 18px; height: 18px; flex: 0 0 18px; }
+.illustration { display: block; }
+.garden { max-width: 1152px; margin: auto; padding: 24px 28px 16px; }
+.garden-header { margin-bottom: 24px; }
+.brand-row, .header-actions, .title-row, .garden-stats, .brand { display: flex; align-items: center; }
+.brand-row { justify-content: space-between; margin-bottom: 16px; }
+.brand { gap: 8px; color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: 2px; }
+.header-actions { gap: 4px; }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; }
+.icon-button:hover { background: var(--soft); }
+.title-row { gap: 12px; }
+.garden-title { font-size: clamp(22px, 3vw, 32px); font-weight: 650; letter-spacing: -.7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.level-badge { padding: 3px 8px; border: 1px solid var(--border); border-radius: 6px; color: var(--green); font-size: 10px; font-weight: 700; white-space: nowrap; }
+.garden-subtitle { margin-top: 3px; color: var(--muted); }
+.garden-stats { flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; color: var(--muted); font-size: 11px; }
+.streak { display: inline-flex; align-items: center; gap: 5px; }
+.streak .icon { width: 14px; height: 14px; flex-basis: 14px; color: var(--legendary); }
+.project-select { width: 100%; margin-top: 12px; }
+.tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab { display: inline-flex; align-items: center; gap: 7px; padding: 12px 0; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); font-size: 12px; }
+.tab[aria-pressed='true'] { color: var(--green); border-bottom-color: var(--green); font-weight: 600; }
+.tab:hover { color: var(--text); }
+.tab .icon { width: 16px; height: 16px; flex-basis: 16px; }
+.garden-content { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: start; }
+.garden-content > * { min-width: 0; }
+.scene { position: relative; overflow: hidden; isolation: isolate; border-radius: 16px; background: linear-gradient(#e4efdf 0%, #eef2dd 32%, #c6d1a0 67%, #b6c28d 100%); color: #3c553d; border: 1px solid #c5d2b3; }
+.scene-scenery { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.scene-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 18px; }
+.scene-label { font-size: 11px; font-weight: 500; letter-spacing: .2px; }
+.atmosphere-button { background: #ffffff65; color: #425b42; width: 28px; height: 28px; }
+.atmosphere-button:hover { background: #ffffffa0; }
+.atmosphere-button .icon { width: 15px; height: 15px; flex-basis: 15px; }
+.scene-sun { position: absolute; left: 12%; top: 68px; width: 34px; height: 34px; border-radius: 50%; background: #f8dc92; box-shadow: 0 0 0 9px #f8dc9228, 0 0 30px #f8dc9280; }
+.scene-cloud { position: absolute; width: 56px; height: 14px; border-radius: 50px; background: #fffaf080; }
+.scene-cloud::before, .scene-cloud::after { content: ''; position: absolute; border-radius: 50%; background: inherit; }
+.scene-cloud::before { width: 24px; height: 24px; left: 9px; bottom: 0; }
+.scene-cloud::after { width: 18px; height: 18px; right: 8px; bottom: 0; }
+.scene-cloud--one { left: 30%; top: 98px; }
+.scene-cloud--two { left: 56%; top: 77px; transform: scale(.65); }
+.scene-hill { position: absolute; width: 120%; height: 150px; border-radius: 50%; }
+.scene-hill--back { top: 108px; left: -30%; background: #b8c9a0; transform: rotate(-9deg); }
+.scene-hill--front { top: 133px; right: -35%; background: #c4d2aa; transform: rotate(12deg); }
+.scene-house { position: absolute; width: 80px; height: 70px; top: 77px; right: 10%; opacity: .85; }
+.plots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; max-width: 500px; margin: 66px auto 8px; padding: 0 20px; }
+.plot { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; height: 114px; border: 0; border-radius: 40%; background: transparent; color: #364b2d; }
+.plot::before { content: ''; position: absolute; width: 90%; height: 22px; border-radius: 50%; top: 72px; background: #8e7357; box-shadow: 0 4px 0 #77654b, inset 0 3px 0 #a38a65; transition: box-shadow .2s, background .2s; }
+.plot::after { content: ''; position: absolute; width: 95%; height: 32px; border: 1px dashed #567547; border-radius: 50%; top: 67px; opacity: 0; transition: opacity .2s; }
+.plot-art { position: relative; z-index: 1; width: 90px; max-width: 100%; height: 94px; transform-origin: 50% 90%; transition: transform .25s; pointer-events: none; }
+.plot:hover .plot-art { transform: translateY(-4px) rotate(-3deg); }
+.plot:hover::after, .plot.is-selected::after, .plot.is-moving::after, .plot.is-drop-target::after { opacity: 1; }
+.plot.is-selected::before { box-shadow: 0 4px 0 #77654b, 0 0 0 4px #eff4d55c, inset 0 3px 0 #a38a65; }
+.plot.is-moving .plot-art { animation: plant-sway .7s ease-in-out infinite alternate; }
+.plot.is-drop-target::before { background: #5f7b43; box-shadow: 0 0 0 4px #edf5d698; }
+.plot-label { position: absolute; z-index: 2; bottom: 0; max-width: 140%; background: #f7f6e9e8; padding: 2px 6px; border-radius: 5px; color: #364b2d; font-size: 10px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.plot:hover .plot-label, .plot:focus-visible .plot-label, .plot.is-selected .plot-label { opacity: 1; }
+.plot-seed { position: absolute; top: 69px; z-index: 1; color: #d7c5a6; font-size: 26px; line-height: 22px; }
+.plot--empty::before { background: #99826290; box-shadow: 0 3px 0 #7d705653; }
+.plot--empty { cursor: default; }
+.scene[data-tool='move'] .plot--empty { cursor: pointer; }
+.scene[data-tool='move'] .plot--empty::after { opacity: .4; }
+.scene[data-tool='water'] .plot:not(.plot--empty) { cursor: pointer; }
+.water-drops { position: absolute; top: 10px; left: 40%; display: none; z-index: 3; width: 7px; height: 11px; background: #76bed8; border-radius: 70% 30% 60% 40%; box-shadow: 20px -12px #9ed0e0, -17px -7px #76bed8; }
+.is-watered .water-drops { display: block; animation: watering .7s ease-in infinite; }
+.is-watered .plot-art { animation: plant-sway .4s ease-in-out infinite alternate; }
+.is-new .plot-art { animation: bloom .6s cubic-bezier(.2, .7, .3, 1.3); }
+.scene-hint { display: flex; justify-content: center; align-items: center; gap: 6px; min-height: 42px; padding: 8px 12px 14px; text-align: center; font-size: 10px; }
+.scene-hint .icon { width: 14px; height: 14px; flex-basis: 14px; }
+.scene[data-atmosphere='night'] { background: linear-gradient(#293a4c, #405759 39%, #536948 68%, #617447); color: #e5ecd5; border-color: #566b53; }
+.scene[data-atmosphere='night'] .scene-scenery::after { content: ''; position: absolute; top: 80px; left: 41%; width: 2px; height: 2px; background: #f5ebc5; box-shadow: 35px -15px #f5ebc5, 70px 13px #f5ebc5, -30px -14px #f5ebc5, 119px -20px #f5ebc5, -90px 33px #f5ebc5; }
+.scene[data-atmosphere='night'] .scene-sun { background: #f6e7bb; box-shadow: 0 0 0 8px #f6e7bb09, 0 0 30px #f6e7bb20; width: 27px; height: 27px; }
+.scene[data-atmosphere='night'] .scene-cloud { opacity: .15; }
+.scene[data-atmosphere='night'] .scene-hill--back { background: #485e50; }
+.scene[data-atmosphere='night'] .scene-hill--front { background: #52654d; }
+.scene[data-atmosphere='night'] .scene-house { filter: brightness(.7); }
+.scene[data-atmosphere='night'] .atmosphere-button { color: #f6e7bb; background: #ffffff12; }
+.scene[data-atmosphere='night'] .plot::after { border-color: #d6e6b7; }
+.garden-tools { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.tool-group { display: inline-flex; padding: 4px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
+.tool-button { display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 7px 12px; border-radius: 6px; color: var(--muted); font-size: 11px; }
+.tool-button .icon { width: 15px; height: 15px; flex-basis: 15px; }
+.tool-button[aria-pressed='true'] { background: var(--green-soft); color: var(--green); font-weight: 600; }
+.tool-button:hover { color: var(--text); }
+.pagination { display: flex; align-items: center; gap: 2px; font-size: 11px; color: var(--muted); }
+.first-fix { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; color: var(--muted); }
+.first-fix strong { color: var(--text); }
+code { padding: 5px 8px; border-radius: 4px; background: var(--soft); overflow-wrap: anywhere; }
+.inspector { padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); overflow-wrap: anywhere; }
+.inspector-art { width: 126px; height: 138px; margin: 0 auto 12px; background: radial-gradient(ellipse closest-side, var(--green-soft) 0%, transparent 100%); }
+.rarity-pill { display: table; margin: 0 auto 8px; color: var(--plant-color); background: var(--soft); border-radius: 20px; padding: 3px 10px; font-size: 10px; }
+.specimen-name { font-size: 21px; font-weight: 650; text-align: center; letter-spacing: -.5px; }
+.specimen-description { color: var(--muted); text-align: center; margin-top: 7px; font-size: 12px; }
+.commit-story { margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--border); }
+.commit-story + .unlock-hint { margin-top: 14px; }
+.eyebrow { color: var(--muted); font-size: 9px; letter-spacing: 1.6px; font-weight: 600; margin-bottom: 8px; }
+.commit-subject { font-size: 13px; font-weight: 600; margin: 8px 0; }
+.commit-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 10px; }
+.commit-copy { display: inline-flex; align-items: center; gap: 6px; padding: 4px 7px; background: var(--soft); border: 0; border-radius: 4px; font: 10px var(--vscode-editor-font-family, monospace); }
+.commit-copy .icon { width: 12px; height: 12px; flex-basis: 12px; }
+.detail-title { font-size: 12px; font-weight: 600; margin: 18px 0 6px; }
+.unlock-hint { color: var(--muted); font-size: 11px; }
+.specimen-actions { display: flex; gap: 8px; margin-top: 20px; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); font-size: 11px; }
+.button:hover { background: var(--soft); }
+.primary-button { background: var(--green-soft); color: var(--green); border-color: transparent; }
+.primary-button:hover { border-color: var(--green); background: var(--green-soft); }
+.inspector > .eyebrow { margin-top: 22px; }
+.inspector > .button { margin-top: 20px; }
+.plant--common { --plant-color: var(--common); }
+.plant--rare { --plant-color: var(--rare); }
+.plant--epic { --plant-color: var(--epic); }
+.plant--legendary { --plant-color: var(--legendary); }
+.section-title { font-size: 23px; letter-spacing: -.6px; line-height: 1.25; margin-bottom: 10px; }
+.muted { color: var(--muted); font-size: 12px; }
+.collection-filters { display: flex; gap: 8px; margin: 20px 0 16px; }
+input, select { min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); font-size: 11px; }
+.search { flex: 1; width: 0; }
+.rarity-select { max-width: 130px; }
+.species-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.species-card { display: flex; flex-direction: column; align-items: center; padding: 14px 8px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); text-align: center; transition: border-color .2s, transform .2s; }
+.species-card:hover { transform: translateY(-3px); border-color: var(--plant-color); }
+.species-card[aria-pressed='true'] { border-color: var(--plant-color); box-shadow: 0 0 0 1px var(--plant-color); }
+.species-card .illustration { width: 80px; height: 88px; margin-bottom: 8px; }
+.species-card strong { font-size: 12px; }
+.rarity-label { color: var(--plant-color); font-size: 10px; margin: 3px 0 10px; }
+.species-count { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 10px; }
+.species-count .icon { width: 11px; height: 11px; flex-basis: 11px; }
+.is-undiscovered .illustration { opacity: .65; filter: saturate(.6); }
+.empty-search { grid-column: 1 / -1; color: var(--muted); padding: 24px 0; }
+.achievement-grid { display: grid; gap: 10px; margin-top: 20px; }
+.achievement { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); text-align: left; }
+.achievement:hover, .achievement[aria-pressed='true'] { border-color: var(--green); }
+.achievement-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%; background: var(--soft); font-size: 21px; }
+.achievement-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.achievement-text strong { font-size: 12px; }
+.achievement-text > span { color: var(--muted); font-size: 11px; }
+.achievement-percent { font-size: 10px; color: var(--muted); }
+.is-unlocked .achievement-icon { background: var(--green-soft); }
+.is-unlocked > .icon { color: var(--green); }
+progress { display: block; width: 100%; height: 5px; border: 0; border-radius: 4px; overflow: hidden; background: var(--soft); accent-color: var(--green); }
+progress::-webkit-progress-bar { background: var(--soft); border-radius: 4px; }
+progress::-webkit-progress-value { background: var(--green); border-radius: 4px; }
+.achievement-progress { margin-top: 4px; }
+.milestone-large-icon { display: block; font-size: 52px; text-align: center; margin: 20px 0; }
+.milestone-completion { margin: 20px 0 8px; color: var(--green); font-size: 12px; font-weight: 600; }
+.level-progress { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--border); }
+.level-progress-label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 10px; margin-bottom: 8px; }
+.level-progress-label .icon { width: 13px; height: 13px; flex-basis: 13px; }
+.level-remaining { margin-left: auto; }
+.level-progress-bar { height: 4px; }
+.garden-notice { min-height: 30px; margin-top: 12px; color: var(--muted); font-size: 10px; }
+.welcome-garden { padding: 36px 4px; text-align: center; }
+.welcome-bouquet { display: flex; justify-content: center; align-items: end; margin-bottom: 24px; }
+.welcome-bouquet .illustration { width: 74px; height: 80px; }
+.welcome-bouquet .illustration:nth-child(2) { width: 106px; height: 118px; }
+.welcome-garden h1 { font-size: 26px; margin-bottom: 12px; letter-spacing: -.6px; }
+.welcome-garden .button { margin-top: 24px; }
+.loading-garden { padding: 60px 12px; text-align: center; color: var(--muted); }
+.is-spinning .icon { animation: spin 1s linear infinite; }
+@keyframes plant-sway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+@keyframes watering { from { transform: translateY(-8px); opacity: 0; } 25% { opacity: 1; } to { transform: translateY(38px); opacity: 0; } }
+@keyframes bloom { from { transform: scale(.25); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 760px) {
+	.garden { padding: 20px; }
+	.garden-content { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+	.inspector { position: relative; min-height: 164px; padding: 20px; }
+	.inspector-art { width: 96px; height: 104px; float: left; margin: 0 16px 10px 0; }
+	.inspector::after { content: ''; display: block; clear: both; }
+	.inspector .rarity-pill { display: inline-block; margin-bottom: 6px; }
+	.specimen-name, .specimen-description { text-align: left; }
+	.commit-story { clear: both; }
+	.species-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 }
-
-.garden {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding: 8px;
+@media (max-width: 420px) {
+	.garden { padding: 16px 12px 8px; }
+	.garden-header { margin-bottom: 16px; }
+	.brand-row { margin-bottom: 12px; }
+	.tabs { justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+	.tab { gap: 5px; font-size: 11px; }
+	.scene { border-radius: 12px; }
+	.scene-top { padding: 12px; }
+	.plots { gap: 0 5px; padding: 0 10px; margin-top: 58px; }
+	.plot { height: 91px; }
+	.plot-art { height: 75px; width: 70px; }
+	.plot::before { top: 57px; height: 18px; }
+	.plot::after { top: 52px; height: 28px; }
+	.plot-seed { top: 54px; }
+	.plot-label { font-size: 9px; padding: 2px 4px; }
+	.scene-house { right: 6%; width: 65px; height: 57px; top: 78px; }
+	.scene-label { font-size: 10px; }
+	.scene-hint { font-size: 9px; padding-bottom: 12px; }
+	.tool-group { width: 100%; justify-content: space-between; }
+	.tool-button { padding: 6px 10px; }
+	.inspector { padding: 16px; }
+	.inspector-art { width: 84px; height: 91px; margin-right: 12px; }
+	.specimen-name { font-size: 19px; }
+	.specimen-description { font-size: 11px; }
+	.species-grid { gap: 8px; }
+	.species-card { padding: 12px 6px; }
+	.achievement { padding: 12px; gap: 10px; }
+	.achievement-icon { width: 32px; height: 32px; flex-basis: 32px; font-size: 18px; }
 }
-
-.garden__header {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
+body.vscode-high-contrast, body.vscode-high-contrast-light {
+	--text: var(--vscode-foreground, #fff);
+	--muted: var(--vscode-foreground, #fff);
+	--bg: var(--vscode-editor-background, #000);
+	--surface: var(--vscode-editor-background, #000);
+	--soft: var(--vscode-editor-background, #000);
+	--border: var(--vscode-contrastBorder, #fff);
+	--green: var(--vscode-foreground, #fff);
+	--green-soft: var(--vscode-editor-background, #000);
+	--common: var(--vscode-foreground, #fff);
+	--rare: var(--vscode-foreground, #fff);
+	--epic: var(--vscode-foreground, #fff);
+	--legendary: var(--vscode-foreground, #fff);
 }
-
-.garden__project {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 6px;
-	font-weight: 600;
-}
-
-.garden__project select {
-	flex: 1;
-	min-width: 0;
-	color: var(--text);
-	background: var(--vscode-dropdown-background, transparent);
-	border: 1px solid var(--border);
-	border-radius: 3px;
-	padding: 2px 4px;
-}
-
-.garden__summary {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-
-.garden__tile {
-	flex: 1 1 90px;
-	border: 1px solid var(--border);
-	border-radius: 4px;
-	padding: 6px 8px;
-	background: var(--vscode-editorWidget-background, transparent);
-}
-
-.garden__tile-value {
-	display: block;
-	font-size: 1.2em;
-	font-weight: 700;
-}
-
-.garden__tile-label {
-	display: block;
-	color: var(--muted);
-	font-size: 0.85em;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-}
-
-.garden__bed {
-	border-radius: 6px;
-	padding: 8px 6px 6px;
-	background: linear-gradient(180deg, transparent 0 12px, var(--soil-light) 12px, var(--soil) 100%);
-	border: 1px solid var(--border);
-}
-
-.garden__plants {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.plant {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 2px;
-	width: 84px;
-	padding: 6px 4px;
-	border: 1px solid var(--border);
-	border-radius: 6px;
-	background: var(--vscode-editor-background, transparent);
-	color: inherit;
-	font: inherit;
-	text-align: center;
-	cursor: pointer;
-}
-
-.plant:hover,
-.plant:focus-visible {
-	border-color: var(--vscode-focusBorder, var(--plant-color, #888));
-	outline: none;
-}
-
-.plant[aria-pressed='true'] {
-	border-color: var(--plant-color);
-	box-shadow: 0 0 0 1px var(--plant-color) inset;
-}
-
-.plant svg {
-	width: 34px;
-	height: 34px;
-	fill: none;
-	stroke: var(--plant-color);
-	stroke-width: 1.4;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.plant--common {
-	--plant-color: var(--common);
-}
-.plant--rare {
-	--plant-color: var(--rare);
-}
-.plant--epic {
-	--plant-color: var(--epic);
-}
-.plant--legendary {
-	--plant-color: var(--legendary);
-}
-
-.plant__name {
-	font-size: 0.9em;
-	font-weight: 600;
-	line-height: 1.1;
-}
-
-.plant__rarity {
-	font-size: 0.75em;
-	color: var(--plant-color);
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
-
-.garden__details {
-	border: 1px solid var(--border);
-	border-radius: 6px;
-	padding: 8px 10px;
-	background: var(--vscode-editorWidget-background, transparent);
-}
-
-.garden__details h3 {
-	margin: 0 0 2px;
-	font-size: 1.05em;
-}
-
-.garden__details dl {
-	display: grid;
-	grid-template-columns: auto 1fr;
-	gap: 2px 8px;
-	margin: 6px 0 0;
-	font-size: 0.9em;
-}
-
-.garden__details dt {
-	color: var(--muted);
-}
-
-.garden__details dd {
-	margin: 0;
-	overflow-wrap: anywhere;
-}
-
-.garden__empty {
-	margin: 0;
-	padding: 10px;
-	border: 1px dashed var(--border);
-	border-radius: 6px;
-	color: var(--muted);
-	text-align: center;
-}
-
-.garden__progress {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	margin: 8px 0 0;
-}
-
-.garden__progress-bar {
-	height: 6px;
-	border-radius: 3px;
-	background: var(--legendary);
-}
-
-.garden__progress-label {
-	color: var(--muted);
-	font-size: 0.85em;
-}
-
-.garden__rarest h3,
-.garden__achievements h3 {
-	margin: 12px 0 6px;
-	font-size: 0.95em;
-}
-
-.garden__rarest-card {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 8px;
-	border: 1px solid var(--border);
-	border-radius: 6px;
-	background: var(--surface);
-}
-
-.garden__achievement-list {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.achievement {
-	display: grid;
-	grid-template-columns: 20px 1fr auto;
-	align-items: center;
-	gap: 6px;
-	padding: 4px 6px;
-	border-radius: 4px;
-	opacity: 0.55;
-}
-
-.achievement--unlocked {
-	opacity: 1;
-}
-
-.achievement--gold.achievement--unlocked {
-	background: var(--legendary-soft);
-}
-
-.achievement--silver.achievement--unlocked {
-	background: var(--epic-soft);
-}
-
-.achievement--bronze.achievement--unlocked {
-	background: var(--rare-soft);
-}
-
-.achievement__icon {
-	text-align: center;
-}
-
-.achievement__progress {
-	color: var(--muted);
-	font-size: 0.85em;
+body.vscode-high-contrast .tool-button[aria-pressed='true'], body.vscode-high-contrast-light .tool-button[aria-pressed='true'] { outline: 1px solid var(--border); }
+body.vscode-high-contrast .scene, body.vscode-high-contrast-light .scene { border: 2px solid var(--border); }
+body.vscode-reduce-motion *, body.vscode-reduce-motion *::before, body.vscode-reduce-motion *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after { animation: none !important; transition: none !important; }
 }

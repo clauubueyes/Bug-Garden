@@ -42,6 +42,7 @@ src/
     gardenService.ts           scan -> garden -> storage, plus stats and fresh unlocks
   storage/
     storageService.ts          typed read/write over vscode Memento + JSON versioning
+    gardenPreferences.ts       per-project plant placement and day/night scenery
     migrations.ts              schema version upgrades
     projectKey.ts              workspace path -> stable project id
   notifications/
@@ -203,16 +204,24 @@ is never repeated while the achievement itself is always recomputed.
 
 ### 7. Extension ↔ webview communication
 
-`gardenView` owns a `WebviewView` in the `bugGarden` Activity Bar container.
+`gardenView` owns a `WebviewView` in the `bugGarden` Activity Bar container and an optional
+editor `WebviewPanel`. Both use the same local renderer and receive the current snapshot.
 
-- Extension → webview: one message, `webview.postMessage({ type: 'garden/updated', payload })`,
+- Extension → webview: `webview.postMessage({ type: 'garden/updated', payload, preferences })`,
   carrying the plain snapshot built by `gardenSerializer` (no VS Code types cross the
   boundary). The payload holds the plant list, the summary (level, title, progress, streaks,
-  rarest plant, rarity counts), the project list and the achievements.
-- Webview → extension: `onDidReceiveMessage` accepts exactly three messages, `garden/ready`,
-  `garden/refresh` and `project/select`, validated by `parseInboundMessage`. Anything unknown or
-  malformed is dropped. Selecting a plant needs no round trip: the webview renders the details
-  it already has, so the protocol never carries a message it could have answered locally.
+  rarest plant, rarity counts), the project list, the full species catalogue and achievements.
+  `garden/notice` reports action success or failure through the view's live status region.
+- Webview → extension: `garden/ready`, `garden/refresh`, `project/select`, `garden/expand`,
+  `garden/openFolder`, `garden/preferences` and `plant/copyCommit` are validated by
+  `parseInboundMessage`. Unknown or malformed messages are dropped. Preference writes and
+  commit copying require an open project; specimen ids are checked against earned plants.
+  Commit hashes are resolved by the extension, never taken from a clipboard request.
+- `gardenPreferences` stores `{ atmosphere, slots }` per project in the separate
+  `bugGarden.preferences.v1` workspace-state key. Null slots preserve empty plots; duplicate
+  and unknown specimens cannot create earned plants. Writes are serialized across projects.
+  Selection and the active tab use webview `getState`/`setState` for hide/show restoration.
+  Selecting, searching and watering need no round trip and cannot change progression.
 - The webview builds DOM nodes and sets `textContent`; commit subjects and plant names are
   never interpolated as HTML. It loads only local resources with a per-session nonce and a
   strict Content Security Policy.
