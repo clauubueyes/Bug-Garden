@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Plant domain: rarity tiers, the plant catalogue with unlock conditions, and a deterministic
+  generator seeded by the commit hash.
+- Commit feature extraction (night window, large/small diff, tests, net removals, typo, hotfix,
+  revert, fixup) shared by every plant rule.
+- Seeded PRNG helpers so the same commit always yields the same plant.
+- `docs/PLANT_SYSTEM.md` documenting species, rarities, scoring and selection rules.
+
 ## [0.1.0] - 2026-10-05
 
 ### Added

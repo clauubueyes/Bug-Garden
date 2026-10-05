@@ -17,7 +17,7 @@ to an external service.
 Current status per roadmap phase:
 
 - [x] Phase 0 — Project bootstrap (TypeScript, lint, tests, structure)
-- [ ] Phase 1 — Garden domain (plants, rarities, deterministic generation)
+- [x] Phase 1 — Garden domain (plants, rarities, deterministic generation)
 - [ ] Phase 2 — Git integration (commit detection and bug-fix classification)
 - [ ] Phase 3 — Persistence (per-workspace garden state)
 - [ ] Phase 4 — VS Code UI (Activity Bar, garden webview, plant details)
@@ -92,7 +92,7 @@ Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), plant rules in
 
 - **Phase 0 — Bootstrap.** Scaffolding, tooling, tests, docs. ✅
 - **Phase 1 — Garden domain.** Models, plant catalogue, rarity calculation, deterministic
-  generation.
+  generation. ✅
 - **Phase 2 — Git integration.** Repository detection, commit parsing, bug-fix
   classification, duplicate prevention.
 - **Phase 3 — Persistence.** Garden state per workspace, versioning/migrations.
