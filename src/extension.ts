@@ -57,11 +57,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	// A new folder becomes the active project so a single root workspace is never left empty.
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeWorkspaceFolders((event) => {
-			const added = event.added[0];
-			if (added) {
-				activeProjectId = createProjectId(added.uri.fsPath);
-			}
-			void refresh();
+			void updateWorkspaceFolders(event).catch((error: unknown) => notifier.error(describe(error)));
 		}),
 		vscode.window.onDidChangeActiveTextEditor((editor) => {
 			const projectId = projectIdForUri(editor?.document.uri);
@@ -72,9 +68,26 @@ export function activate(context: vscode.ExtensionContext): void {
 		}),
 	);
 
-	void activateWorkspaces(context, repositoryRoots, () => {
+	output.appendLine(`Open workspace folders: ${listProjects().map((project) => project.projectName).join(', ') || '(none)'}`);
+	void registerWorkspaces(context, vscode.workspace.workspaceFolders ?? [], repositoryRoots, () => {
 		void refresh();
-	});
+	}).catch((error: unknown) => notifier.error(describe(error)));
+
+	async function updateWorkspaceFolders(event: vscode.WorkspaceFoldersChangeEvent): Promise<void> {
+		for (const folder of event.removed) {
+			repositoryRoots.delete(createProjectId(folder.uri.fsPath));
+		}
+		const added = event.added[0];
+		if (added) {
+			activeProjectId = createProjectId(added.uri.fsPath);
+		} else if (event.removed.some((folder) => createProjectId(folder.uri.fsPath) === activeProjectId)) {
+			activeProjectId = firstProjectId();
+		}
+		await registerWorkspaces(context, event.added, repositoryRoots, () => {
+			void refresh();
+		});
+		await refresh();
+	}
 
 	/** Serialised so overlapping HEAD moves cannot start two scans at once. */
 	async function refresh(): Promise<void> {
@@ -126,12 +139,13 @@ export function activate(context: vscode.ExtensionContext): void {
 	}
 }
 
-async function activateWorkspaces(
+async function registerWorkspaces(
 	context: vscode.ExtensionContext,
+	folders: readonly vscode.WorkspaceFolder[],
 	repositoryRoots: Map<string, string>,
 	onChange: () => void,
 ): Promise<void> {
-	for (const folder of vscode.workspace.workspaceFolders ?? []) {
+	for (const folder of folders) {
 		await registerWorkspace(context, folder, repositoryRoots, onChange);
 	}
 }

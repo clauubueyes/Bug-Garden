@@ -56,8 +56,17 @@ npm run check      # type-check + lint + tests, in one go
 npm run package    # build and produce bug-garden-<version>.vsix
 ```
 
-Then press <kbd>F5</kbd> in VS Code to launch an Extension Development Host with Bug Garden
-loaded, or install the produced `.vsix` with
+Then select **Run Extension** in VS Code's Run and Debug view and press <kbd>F5</kbd>.
+The Extension Development Host opens this repository through `.vscode/extension-dev.code-workspace`
+with Bug Garden loaded. This separate workspace lets the test window use the same repository
+as the editor window; VS Code otherwise skips a folder that is already open.
+In that window, run **Bug Garden: Open Garden View** from the Command Palette. Existing
+bug-fix commits become plants; **Bug Garden: Refresh Garden** re-scans without duplicates.
+After changing the extension, restart the debug session to load the rebuilt code.
+If an older development window is still open, close that window before pressing <kbd>F5</kbd>
+so VS Code uses the current launch arguments.
+
+You can also install the produced `.vsix` with
 `code --install-extension bug-garden-0.1.0.vsix`.
 
 ## Commands

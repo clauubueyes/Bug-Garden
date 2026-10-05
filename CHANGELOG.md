@@ -35,6 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Classification reads the commit subject only, and treats `fixup!`, `squash!`, reverts and
   merge commits as non-fixes so rebases do not spam the garden.
 
+### Fixed
+
+- The garden view resolves its active project from the currently open folders, including
+  when a previous selection is missing or its folder has been removed.
+- Folders added after activation are registered before scanning their Git history.
+- Local debugging opens the extension repository through a separate `.code-workspace` file,
+  avoiding VS Code skipping a folder that is already open in the editor window.
+- Rarest-plant summaries include the rarity identifier used by the webview, so rendering
+  a populated garden no longer fails when building the rarest-plant card.
+
 ## [0.1.0] - 2026-10-05
 
 ### Added

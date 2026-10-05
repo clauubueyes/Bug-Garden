@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { parseInboundMessage, type ExtensionToWebviewMessage } from './messages.ts';
-import { createEmptyViewModel, serializeGarden, type ProjectOption } from './gardenSerializer.ts';
+import { serializeActiveGarden, type ProjectOption } from './gardenSerializer.ts';
 import type { GardenService } from '../garden/gardenService.ts';
 
 export const VIEW_ID = 'bugGarden.gardenView';
@@ -35,8 +35,6 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 			enableScripts: true,
 			localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
 		};
-		view.webview.html = renderShell(view.webview, this.extensionUri);
-
 		this.subscriptions.push(
 			view.webview.onDidReceiveMessage((data: unknown) => {
 				void this.handleMessage(data);
@@ -44,7 +42,13 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 			view.onDidDispose(() => {
 				this.view = undefined;
 			}),
+			view.onDidChangeVisibility(() => {
+				if (view.visible) {
+					void this.sendActiveGarden();
+				}
+			}),
 		);
+		view.webview.html = renderShell(view.webview, this.extensionUri);
 	}
 
 	async send(message: ExtensionToWebviewMessage): Promise<void> {
@@ -55,9 +59,7 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 	async sendActiveGarden(): Promise<void> {
 		const projectId = this.dependencies.getActiveProjectId();
 		const projects = this.dependencies.getProjects();
-		const payload = projectId
-			? serializeGarden(this.dependencies.gardenService.getGarden(projectId), projects)
-			: createEmptyViewModel(projects);
+		const payload = serializeActiveGarden(this.dependencies.gardenService, projectId, projects);
 
 		await this.send({ type: 'garden/updated', payload });
 	}

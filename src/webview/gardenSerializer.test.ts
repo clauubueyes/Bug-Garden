@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { createEmptyViewModel, formatDate, serializeGarden, serializePlant } from './gardenSerializer.ts';
+import { createEmptyViewModel, formatDate, serializeActiveGarden, serializeGarden, serializePlant } from './gardenSerializer.ts';
 import { createGarden } from '../garden/gardenManager.ts';
 import type { PlantInstance } from '../types/plant.ts';
 
@@ -104,6 +104,7 @@ describe('serializeGarden', () => {
 		assert.equal(model.summary.plantsToNextLevel, 5);
 		assert.match(model.summary.levelProgressLabel, /Level 2 · Sprout Terrace · 5 to level 3/);
 		assert.equal(model.summary.rarestPlant?.name, 'Ghost Orchid');
+		assert.equal(model.summary.rarestPlant?.rarity, 'epic');
 		assert.equal(model.summary.rarestPlant?.rarityLabel, 'Epic');
 		assert.deepEqual(model.summary.rarityCounts, { common: 1, rare: 1, epic: 1, legendary: 0 });
 	});
@@ -151,6 +152,52 @@ describe('createEmptyViewModel', () => {
 		for (const achievement of model.achievements) {
 			assert.equal(achievement.unlocked, false, achievement.id);
 		}
+	});
+});
+
+describe('serializeActiveGarden', () => {
+	const projects = [
+		{ projectId: 'p', projectName: 'project' },
+		{ projectId: 'other', projectName: 'other-project' },
+	];
+	const gardenService = {
+		getGarden: (projectId: string) => ({
+			...createGarden(projectId, projectId, NOW),
+			plants: [{ ...ghostOrchid, projectId }],
+			processedCommits: [ghostOrchid.commitSha],
+		}),
+	};
+
+	it('shows the garden when a folder opens after an empty workspace', () => {
+		const empty = serializeActiveGarden(gardenService, null, []);
+		assert.match(empty.emptyMessage ?? '', /Open a folder/);
+
+		const opened = serializeActiveGarden(gardenService, null, projects);
+		assert.equal(opened.projectId, 'p');
+		assert.equal(opened.projectName, 'project');
+		assert.equal(opened.plants.length, 1);
+		assert.equal(opened.emptyMessage, null);
+	});
+
+	it('keeps the selected project while its folder is open', () => {
+		const model = serializeActiveGarden(gardenService, 'other', projects);
+		assert.equal(model.projectId, 'other');
+		assert.equal(model.projectName, 'other-project');
+	});
+
+	it('switches to an open folder when the selected project was removed', () => {
+		const model = serializeActiveGarden(gardenService, 'removed', projects);
+		assert.equal(model.projectId, 'p');
+		assert.equal(model.projectName, 'project');
+	});
+
+	it('shows the empty workspace when the last folder is closed', () => {
+		const model = serializeActiveGarden({
+			getGarden: () => assert.fail('a closed project must not be loaded'),
+		}, 'p', []);
+		assert.equal(model.projectId, null);
+		assert.deepEqual(model.plants, []);
+		assert.match(model.emptyMessage ?? '', /Open a folder/);
 	});
 });
 

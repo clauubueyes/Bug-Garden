@@ -1,5 +1,6 @@
 import { RARITY_LABELS, type PlantInstance } from '../types/plant.ts';
 import type { Garden, GardenStats } from '../types/garden.ts';
+import type { GardenService } from '../garden/gardenService.ts';
 import { calculateStats, plantsToNextLevel } from '../garden/gardenStats.ts';
 import {
 	evaluateAchievements,
@@ -27,6 +28,7 @@ export interface PlantViewModel {
 export interface RarestPlantViewModel {
 	name: string;
 	glyph: PlantInstance['glyph'];
+	rarity: PlantInstance['rarity'];
 	rarityLabel: string;
 }
 
@@ -56,6 +58,21 @@ export interface GardenViewModel {
 	achievements: AchievementView[];
 	hasGitHistory: boolean;
 	emptyMessage: string | null;
+}
+
+/** Resolve the selection against current folders so a stale selection cannot hide an open project. */
+export function serializeActiveGarden(
+	gardenService: Pick<GardenService, 'getGarden'>,
+	projectId: string | null,
+	projects: readonly ProjectOption[],
+): GardenViewModel {
+	const project = projects.find((option) => option.projectId === projectId) ?? projects[0];
+	if (!project) {
+		return createEmptyViewModel();
+	}
+
+	const garden = gardenService.getGarden(project.projectId);
+	return serializeGarden({ ...garden, projectName: project.projectName }, projects);
 }
 
 /**
@@ -106,7 +123,7 @@ export function serializeStats(stats: GardenStats): GardenSummaryViewModel {
 		currentStreak: stats.currentStreak,
 		longestStreak: stats.longestStreak,
 		rarestPlant: rarest
-			? { name: rarest.name, glyph: rarest.glyph, rarityLabel: RARITY_LABELS[rarest.rarity] }
+			? { name: rarest.name, glyph: rarest.glyph, rarity: rarest.rarity, rarityLabel: RARITY_LABELS[rarest.rarity] }
 			: null,
 		rarityCounts: { ...stats.rarityCounts },
 	};
