@@ -1,9 +1,11 @@
 import { applyCommits, createGarden } from './gardenManager.ts';
+import { calculateStats } from './gardenStats.ts';
+import { evaluateAchievements, newlyUnlocked, type AchievementView } from './achievements.ts';
 import { createProjectId, createProjectName } from '../storage/projectKey.ts';
 import type { HistoryReader } from '../git/historyReader.ts';
 import type { StorageService } from '../storage/storageService.ts';
 import type { CommitInfo } from '../types/commit.ts';
-import type { Garden } from '../types/garden.ts';
+import type { Garden, GardenStats } from '../types/garden.ts';
 import type { PlantInstance } from '../types/plant.ts';
 
 export const DEFAULT_SCAN_LIMIT = 200;
@@ -14,6 +16,10 @@ export interface ScanResult {
 	/** Commits ignored because the garden already grew them. */
 	skipped: number;
 	scanned: number;
+	stats: GardenStats;
+	achievements: AchievementView[];
+	/** Unlocks that had never been announced for this project before this scan. */
+	newlyUnlocked: AchievementView[];
 }
 
 export interface GardenService {
@@ -61,11 +67,22 @@ export function createGardenService(options: GardenServiceOptions): GardenServic
 
 			await options.storage.saveGarden(result.garden);
 
+			const stats = calculateStats(result.garden);
+			const achievements = evaluateAchievements(stats, result.garden.plants);
+			const unlocked = newlyUnlocked(achievements, options.storage.getUnlockedAchievements(projectId));
+			await options.storage.markAchievementsUnlocked(
+				projectId,
+				unlocked.map((achievement) => achievement.id),
+			);
+
 			return {
 				garden: result.garden,
 				added: result.added,
 				skipped: result.skipped,
 				scanned: found.length,
+				stats,
+				achievements,
+				newlyUnlocked: unlocked,
 			};
 		},
 	};
