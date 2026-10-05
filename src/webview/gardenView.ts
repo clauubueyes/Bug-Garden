@@ -95,6 +95,7 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 function renderShell(webview: vscode.Webview, extensionUri: vscode.Uri): string {
 	const nonce = createNonce();
 	const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'garden.css'));
+	const glyphsUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'glyphs.js'));
 	const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'media', 'garden.js'));
 
 	return `<!DOCTYPE html>
@@ -108,6 +109,7 @@ function renderShell(webview: vscode.Webview, extensionUri: vscode.Uri): string 
 	</head>
 	<body>
 		<main id="garden" class="garden"></main>
+		<script nonce="${nonce}" src="${glyphsUri.toString()}"></script>
 		<script nonce="${nonce}" src="${scriptUri.toString()}"></script>
 	</body>
 </html>`;
