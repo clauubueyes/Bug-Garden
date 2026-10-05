@@ -72,8 +72,16 @@
 		summary.appendChild(tile(state.summary.gardenLevel, `Level · ${state.summary.gardenTitle}`));
 		summary.appendChild(tile(state.summary.plantsDiscovered, 'Plants discovered'));
 		summary.appendChild(tile(state.summary.currentStreak, 'Day streak'));
-		summary.appendChild(tile(state.plants.length, 'Unique species'));
+		summary.appendChild(tile(uniqueSpecies(), 'Unique species'));
 		return summary;
+	}
+
+	function uniqueSpecies() {
+		const names = new Set();
+		for (const plant of state.plants) {
+			names.add(plant.name);
+		}
+		return names.size;
 	}
 
 	function tile(value, label) {
