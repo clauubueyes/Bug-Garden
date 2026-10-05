@@ -1,0 +1,206 @@
+:root {
+	--bg: transparent;
+	--soil: #3a2f27;
+	--soil-light: #4c3d31;
+	--text: var(--vscode-foreground);
+	--muted: var(--vscode-descriptionForeground, #a0a0a0);
+	--border: var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+	--common: #7fb069;
+	--rare: #4a9fe0;
+	--epic: #a970d8;
+	--legendary: #e0a33e;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	color: var(--text);
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+}
+
+.garden {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 8px;
+}
+
+.garden__header {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.garden__project {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6px;
+	font-weight: 600;
+}
+
+.garden__project select {
+	flex: 1;
+	min-width: 0;
+	color: var(--text);
+	background: var(--vscode-dropdown-background, transparent);
+	border: 1px solid var(--border);
+	border-radius: 3px;
+	padding: 2px 4px;
+}
+
+.garden__summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.garden__tile {
+	flex: 1 1 90px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 6px 8px;
+	background: var(--vscode-editorWidget-background, transparent);
+}
+
+.garden__tile-value {
+	display: block;
+	font-size: 1.2em;
+	font-weight: 700;
+}
+
+.garden__tile-label {
+	display: block;
+	color: var(--muted);
+	font-size: 0.85em;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.garden__bed {
+	border-radius: 6px;
+	padding: 8px 6px 6px;
+	background: linear-gradient(180deg, transparent 0 12px, var(--soil-light) 12px, var(--soil) 100%);
+	border: 1px solid var(--border);
+}
+
+.garden__plants {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.plant {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	width: 84px;
+	padding: 6px 4px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--vscode-editor-background, transparent);
+	color: inherit;
+	font: inherit;
+	text-align: center;
+	cursor: pointer;
+}
+
+.plant:hover,
+.plant:focus-visible {
+	border-color: var(--vscode-focusBorder, var(--plant-color, #888));
+	outline: none;
+}
+
+.plant[aria-pressed='true'] {
+	border-color: var(--plant-color);
+	box-shadow: 0 0 0 1px var(--plant-color) inset;
+}
+
+.plant svg {
+	width: 34px;
+	height: 34px;
+	fill: none;
+	stroke: var(--plant-color);
+	stroke-width: 1.4;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.plant--common {
+	--plant-color: var(--common);
+}
+.plant--rare {
+	--plant-color: var(--rare);
+}
+.plant--epic {
+	--plant-color: var(--epic);
+}
+.plant--legendary {
+	--plant-color: var(--legendary);
+}
+
+.plant__name {
+	font-size: 0.9em;
+	font-weight: 600;
+	line-height: 1.1;
+}
+
+.plant__rarity {
+	font-size: 0.75em;
+	color: var(--plant-color);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.garden__details {
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 8px 10px;
+	background: var(--vscode-editorWidget-background, transparent);
+}
+
+.garden__details h3 {
+	margin: 0 0 2px;
+	font-size: 1.05em;
+}
+
+.garden__details dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 2px 8px;
+	margin: 6px 0 0;
+	font-size: 0.9em;
+}
+
+.garden__details dt {
+	color: var(--muted);
+}
+
+.garden__details dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.garden__empty {
+	margin: 0;
+	padding: 10px;
+	border: 1px dashed var(--border);
+	border-radius: 6px;
+	color: var(--muted);
+	text-align: center;
+}
+
+.garden__quip {
+	margin: 0;
+	color: var(--muted);
+	font-style: italic;
+}

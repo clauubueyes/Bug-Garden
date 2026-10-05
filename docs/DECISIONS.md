@@ -94,7 +94,7 @@ changes must be versioned (`PLANT_RULES_VERSION`) if we ever want stable histori
 
 ## ADR-005 — Webview for the garden, TreeView only where lists are better
 
-**Status:** Planned (Phase 4)
+**Status:** Accepted
 
 **Decision**
 Render the garden as an HTML/CSS webview in the Activity Bar, not as a `TreeView`.

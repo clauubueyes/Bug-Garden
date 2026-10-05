@@ -106,7 +106,7 @@ Conventions:
 
 2. Use an existing condition helper from `src/garden/conditions.ts` when one fits; only add
    a new feature to `CommitFeatures` when the rule genuinely needs new data from the commit.
-3. Register the glyph in the webview sprite map (`src/webview/media/glyphs.js`).
+3. 3. Register the glyph in the webview sprite map (`media/glyphs.js`).
 4. Add a test in `src/garden/plantGenerator.test.ts` (or `rarityCalculator.test.ts`) covering
    both the matching and the non-matching case. Determinism matters: assert that the same
    commit SHA always yields the same species.
