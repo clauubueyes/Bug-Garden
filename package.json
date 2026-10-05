@@ -1,0 +1,39 @@
+{
+  "name": "bug-garden",
+  "displayName": "Bug Garden",
+  "description": "Turn every bug you fix into a plant in your project's virtual garden.",
+  "version": "0.1.0",
+  "publisher": "bug-garden",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "gamification",
+    "garden",
+    "motivation"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "watch": "tsc -p tsconfig.build.json --watch",
+    "check-types": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
+    "check": "npm run check-types && npm run lint && npm run test",
+    "vscode:prepublish": "npm run build",
+    "package": "npx --yes @vscode/vsce@latest package"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "@types/node": "^22.10.2",
+    "@types/vscode": "^1.90.0",
+    "eslint": "^9.37.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.46.0"
+  }
+}
