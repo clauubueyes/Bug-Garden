@@ -18,6 +18,42 @@
     "motivation"
   ],
   "main": "./out/extension.js",
+  "activationEvents": [
+    "workspaceContains:.git"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "bugGarden.showGarden",
+        "title": "Open Garden View",
+        "category": "Bug Garden"
+      },
+      {
+        "command": "bugGarden.refreshGarden",
+        "title": "Refresh Garden",
+        "category": "Bug Garden",
+        "icon": "$(refresh)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bugGarden",
+          "title": "Bug Garden",
+          "icon": "resources/bug-garden.svg"
+        }
+      ]
+    },
+    "views": {
+      "bugGarden": [
+        {
+          "type": "webview",
+          "id": "bugGarden.gardenView",
+          "name": "Garden"
+        }
+      ]
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "watch": "tsc -p tsconfig.build.json --watch",
