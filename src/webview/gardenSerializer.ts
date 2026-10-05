@@ -1,5 +1,11 @@
 import { RARITY_LABELS, type PlantInstance } from '../types/plant.ts';
-import type { Garden } from '../types/garden.ts';
+import type { Garden, GardenStats } from '../types/garden.ts';
+import { calculateStats, plantsToNextLevel } from '../garden/gardenStats.ts';
+import {
+	evaluateAchievements,
+	levelProgressLabel,
+	type AchievementView,
+} from '../garden/achievements.ts';
 
 export interface PlantViewModel {
 	instanceId: string;
@@ -18,8 +24,22 @@ export interface PlantViewModel {
 	projectName: string;
 }
 
+export interface RarestPlantViewModel {
+	name: string;
+	glyph: PlantInstance['glyph'];
+	rarityLabel: string;
+}
+
 export interface GardenSummaryViewModel {
 	plantsDiscovered: number;
+	gardenLevel: number;
+	gardenTitle: string;
+	levelProgressLabel: string;
+	plantsToNextLevel: number | null;
+	currentStreak: number;
+	longestStreak: number;
+	rarestPlant: RarestPlantViewModel | null;
+	rarityCounts: Record<PlantInstance['rarity'], number>;
 }
 
 export interface ProjectOption {
@@ -33,6 +53,7 @@ export interface GardenViewModel {
 	projects: ProjectOption[];
 	plants: PlantViewModel[];
 	summary: GardenSummaryViewModel;
+	achievements: AchievementView[];
 	hasGitHistory: boolean;
 	emptyMessage: string | null;
 }
@@ -46,13 +67,15 @@ export function serializeGarden(garden: Garden, projects: readonly ProjectOption
 	const plants = [...garden.plants]
 		.sort((a, b) => timestampOf(b) - timestampOf(a))
 		.map((plant) => serializePlant(plant, garden.projectName));
+	const stats = calculateStats(garden);
 
 	return {
 		projectId: garden.projectId,
 		projectName: garden.projectName,
 		projects: projects.map((project) => ({ ...project })),
 		plants,
-		summary: { plantsDiscovered: plants.length },
+		summary: serializeStats(stats),
+		achievements: evaluateAchievements(stats, garden.plants),
 		hasGitHistory: garden.processedCommits.length > 0,
 		emptyMessage: plants.length === 0 ? 'Nothing planted yet. Fix a bug and commit it.' : null,
 	};
@@ -64,9 +87,40 @@ export function createEmptyViewModel(projects: readonly ProjectOption[] = []): G
 		projectName: '',
 		projects: projects.map((project) => ({ ...project })),
 		plants: [],
-		summary: { plantsDiscovered: 0 },
+		summary: serializeStats(calculateStats(emptyGarden())),
+		achievements: evaluateAchievements(calculateStats(emptyGarden()), []),
 		hasGitHistory: false,
 		emptyMessage: 'Open a folder to start a garden.',
+	};
+}
+
+export function serializeStats(stats: GardenStats): GardenSummaryViewModel {
+	const rarest = stats.rarestPlant;
+
+	return {
+		plantsDiscovered: stats.plantsDiscovered,
+		gardenLevel: stats.gardenLevel,
+		gardenTitle: stats.gardenTitle,
+		levelProgressLabel: levelProgressLabel(stats),
+		plantsToNextLevel: stats.plantsToNextLevel ?? plantsToNextLevel(stats.plantsDiscovered),
+		currentStreak: stats.currentStreak,
+		longestStreak: stats.longestStreak,
+		rarestPlant: rarest
+			? { name: rarest.name, glyph: rarest.glyph, rarityLabel: RARITY_LABELS[rarest.rarity] }
+			: null,
+		rarityCounts: { ...stats.rarityCounts },
+	};
+}
+
+function emptyGarden(): Garden {
+	return {
+		projectId: '',
+		projectName: '',
+		plants: [],
+		createdAt: new Date(0).toISOString(),
+		updatedAt: new Date(0).toISOString(),
+		processedCommits: [],
+		lastScannedSha: null,
 	};
 }
 

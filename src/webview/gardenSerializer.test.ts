@@ -79,6 +79,51 @@ describe('serializeGarden', () => {
 		assert.equal(model.emptyMessage, null);
 	});
 
+	it('summarises levels, streaks and rarest plant for the header', () => {
+		const garden = {
+			...createGarden('p', 'project', NOW),
+			plants: [
+				ghostOrchid,
+				{ ...ghostOrchid, instanceId: 'sprout:def', name: 'Sprout', rarity: 'common' as const },
+				{
+					...ghostOrchid,
+					instanceId: 'tulip:ghi',
+					name: 'Tulip',
+					rarity: 'rare' as const,
+					obtainedAt: '2026-10-04T02:15:00Z',
+				},
+			],
+			processedCommits: ['abc1234def5678', 'def', 'ghi'],
+		};
+
+		const model = serializeGarden(garden);
+
+		assert.equal(model.summary.plantsDiscovered, 3);
+		assert.equal(model.summary.gardenLevel, 2);
+		assert.equal(model.summary.gardenTitle, 'Sprout Terrace');
+		assert.equal(model.summary.plantsToNextLevel, 5);
+		assert.match(model.summary.levelProgressLabel, /Level 2 · Sprout Terrace · 5 to level 3/);
+		assert.equal(model.summary.rarestPlant?.name, 'Ghost Orchid');
+		assert.equal(model.summary.rarestPlant?.rarityLabel, 'Epic');
+		assert.deepEqual(model.summary.rarityCounts, { common: 1, rare: 1, epic: 1, legendary: 0 });
+	});
+
+	it('sends achievements with the snapshot', () => {
+		const garden = {
+			...createGarden('p', 'project', NOW),
+			plants: [ghostOrchid],
+			processedCommits: ['abc1234def5678'],
+		};
+
+		const model = serializeGarden(garden);
+		const firstBloom = model.achievements.find((achievement) => achievement.id === 'first-bloom');
+
+		assert.equal(firstBloom?.unlocked, true);
+		for (const achievement of model.achievements) {
+			assert.ok(achievement.progress >= 0 && achievement.progress <= 100, achievement.id);
+		}
+	});
+
 	it('includes the project list for multi root workspaces', () => {
 		const model = serializeGarden(createGarden('p', 'project', NOW), [
 			{ projectId: 'p', projectName: 'project' },
@@ -99,8 +144,13 @@ describe('createEmptyViewModel', () => {
 		assert.equal(model.projectId, null);
 		assert.deepEqual(model.plants, []);
 		assert.equal(model.summary.plantsDiscovered, 0);
+		assert.equal(model.summary.gardenLevel, 1);
+		assert.equal(model.summary.rarestPlant, null);
 		assert.equal(model.projects.length, 1);
 		assert.match(model.emptyMessage ?? '', /Open a folder/);
+		for (const achievement of model.achievements) {
+			assert.equal(achievement.unlocked, false, achievement.id);
+		}
 	});
 });
 

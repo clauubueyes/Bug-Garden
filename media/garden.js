@@ -11,6 +11,8 @@
 		projectName: '',
 		projects: [],
 		plants: [],
+		summary: null,
+		achievements: [],
 		emptyMessage: null,
 		selectedInstanceId: null,
 	};
@@ -52,7 +54,7 @@
 			});
 			project.appendChild(select);
 		} else {
-			project.appendChild(element('span', null, state.projectName));
+			project.appendChild(element('span', 'garden__project-name', state.projectName));
 		}
 
 		const refresh = element('button', 'garden__refresh', '↻');
@@ -61,14 +63,41 @@
 		project.appendChild(refresh);
 		header.appendChild(project);
 
-		const summary = element('div', 'garden__summary');
-		const tile = element('div', 'garden__tile');
-		tile.appendChild(element('span', 'garden__tile-value', String(state.plants.length)));
-		tile.appendChild(element('span', 'garden__tile-label', 'Plants discovered'));
-		summary.appendChild(tile);
-		header.appendChild(summary);
-
+		header.appendChild(renderSummary());
 		return header;
+	}
+
+	function renderSummary() {
+		const summary = element('div', 'garden__summary');
+		summary.appendChild(tile(state.summary.gardenLevel, `Level · ${state.summary.gardenTitle}`));
+		summary.appendChild(tile(state.summary.plantsDiscovered, 'Plants discovered'));
+		summary.appendChild(tile(state.summary.currentStreak, 'Day streak'));
+		summary.appendChild(tile(state.plants.length, 'Unique species'));
+		return summary;
+	}
+
+	function tile(value, label) {
+		const tile = element('div', 'garden__tile');
+		tile.appendChild(element('span', 'garden__tile-value', String(value)));
+		tile.appendChild(element('span', 'garden__tile-label', label));
+		return tile;
+	}
+
+	function renderLevelProgress() {
+		const progress = element('div', 'garden__progress');
+		const total = state.summary.plantsDiscovered + (state.summary.plantsToNextLevel || 0);
+		const done = state.summary.plantsDiscovered;
+		const bar = element('div', 'garden__progress-bar');
+		bar.style.width = total > 0 ? `${Math.round((done / total) * 100)}%` : '100%';
+		bar.setAttribute('role', 'progressbar');
+		bar.setAttribute('aria-valuenow', String(done));
+		bar.setAttribute('aria-valuemin', '0');
+		if (state.summary.plantsToNextLevel !== null) {
+			bar.setAttribute('aria-valuemax', String(total));
+		}
+		progress.appendChild(bar);
+		progress.appendChild(element('span', 'garden__progress-label', state.summary.levelProgressLabel));
+		return progress;
 	}
 
 	function renderBed() {
@@ -124,6 +153,60 @@
 		return panel;
 	}
 
+	function renderRarest() {
+		const panel = element('section', 'garden__rarest');
+		const rarest = state.summary.rarestPlant;
+		if (!rarest) {
+			return null;
+		}
+
+		panel.appendChild(element('h3', null, 'Rarest plant'));
+		const card = element('div', `garden__rarest-card plant--${rarest.rarity.toLowerCase()}`);
+		card.insertAdjacentHTML(
+			'afterbegin',
+			window.BUG_GARDEN_GLYPHS[rarest.glyph] || window.BUG_GARDEN_GLYPHS.sprout,
+		);
+		card.appendChild(element('span', 'plant__name', rarest.name));
+		card.appendChild(element('span', 'plant__rarity', rarest.rarityLabel));
+		panel.appendChild(card);
+		return panel;
+	}
+
+	function renderAchievements() {
+		const panel = element('section', 'garden__achievements');
+		panel.appendChild(element('h3', null, 'Achievements'));
+
+		if (state.achievements.length === 0) {
+			panel.appendChild(element('p', 'garden__empty', 'No achievements yet.'));
+			return panel;
+		}
+
+		const list = element('ul', 'garden__achievement-list');
+		const unlocked = state.achievements.filter((achievement) => achievement.unlocked);
+		const sorted = unlocked.concat(state.achievements.filter((achievement) => !achievement.unlocked));
+
+		for (const achievement of sorted) {
+			const item = element('li', `achievement achievement--${achievement.tier}`);
+			if (achievement.unlocked) {
+				item.classList.add('achievement--unlocked');
+			}
+			item.appendChild(element('span', 'achievement__icon', achievement.icon));
+			item.appendChild(element('span', 'achievement__name', achievement.name));
+			item.appendChild(
+				element(
+					'span',
+					'achievement__progress',
+					achievement.unlocked ? 'Unlocked' : `${Math.round(achievement.progress)}%`,
+				),
+			);
+			item.title = achievement.description;
+			list.appendChild(item);
+		}
+
+		panel.appendChild(list);
+		return panel;
+	}
+
 	function renderEmpty() {
 		return element('p', 'garden__empty', state.emptyMessage || 'Nothing planted yet.');
 	}
@@ -137,13 +220,20 @@
 		}
 
 		root.appendChild(renderHeader());
+		root.appendChild(renderLevelProgress());
+
 		if (state.plants.length === 0) {
 			root.appendChild(renderEmpty());
 			return;
 		}
 
 		root.appendChild(renderBed());
+		const rarest = renderRarest();
+		if (rarest) {
+			root.appendChild(rarest);
+		}
 		root.appendChild(renderDetails());
+		root.appendChild(renderAchievements());
 	}
 
 	function addRow(list, label, value) {
@@ -161,6 +251,8 @@
 		state.projectName = message.payload.projectName;
 		state.projects = message.payload.projects;
 		state.plants = message.payload.plants;
+		state.summary = message.payload.summary;
+		state.achievements = message.payload.achievements;
 		state.emptyMessage = message.payload.emptyMessage;
 		state.selectedInstanceId = null;
 		render();

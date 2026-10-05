@@ -5,10 +5,14 @@
 	--text: var(--vscode-foreground);
 	--muted: var(--vscode-descriptionForeground, #a0a0a0);
 	--border: var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
+	--surface: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.1));
 	--common: #7fb069;
 	--rare: #4a9fe0;
 	--epic: #a970d8;
 	--legendary: #e0a33e;
+	--rare-soft: rgba(74, 159, 224, 0.16);
+	--epic-soft: rgba(169, 112, 216, 0.16);
+	--legendary-soft: rgba(224, 163, 62, 0.18);
 }
 
 * {
@@ -199,8 +203,80 @@ body {
 	text-align: center;
 }
 
-.garden__quip {
-	margin: 0;
+.garden__progress {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 8px 0 0;
+}
+
+.garden__progress-bar {
+	height: 6px;
+	border-radius: 3px;
+	background: var(--legendary);
+}
+
+.garden__progress-label {
 	color: var(--muted);
-	font-style: italic;
+	font-size: 0.85em;
+}
+
+.garden__rarest h3,
+.garden__achievements h3 {
+	margin: 12px 0 6px;
+	font-size: 0.95em;
+}
+
+.garden__rarest-card {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface);
+}
+
+.garden__achievement-list {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.achievement {
+	display: grid;
+	grid-template-columns: 20px 1fr auto;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 6px;
+	border-radius: 4px;
+	opacity: 0.55;
+}
+
+.achievement--unlocked {
+	opacity: 1;
+}
+
+.achievement--gold.achievement--unlocked {
+	background: var(--legendary-soft);
+}
+
+.achievement--silver.achievement--unlocked {
+	background: var(--epic-soft);
+}
+
+.achievement--bronze.achievement--unlocked {
+	background: var(--rare-soft);
+}
+
+.achievement__icon {
+	text-align: center;
+}
+
+.achievement__progress {
+	color: var(--muted);
+	font-size: 0.85em;
 }
