@@ -29,7 +29,7 @@ a different profile, which is acceptable for V1.
 
 ## ADR-002 — Read git through the `git` CLI, not the VS Code Git extension API
 
-**Status:** Planned (Phase 2)
+**Status:** Accepted
 
 **Decision**
 Spawn `git` with `execFile` (argument array, no shell) instead of consuming
@@ -44,7 +44,10 @@ extension is disabled. It also avoids depending on a built-in extension's API sh
 **Consequences**
 We own argument construction, output parsing and process timeouts. Commands are run with
 `cwd` inside the workspace folder and never through a shell, so no user input is
-interpreted as a shell command. Repository discovery uses `git rev-parse --show-toplevel`.
+interpreted as a shell command. Repository discovery uses `git rev-parse --show-toplevel`, and
+every call runs with `GIT_OPTIONAL_LOCKS=0` so a read-only command cannot take the index lock
+in a repository the user is working in. Classification only reads the commit subject, so the
+commit body is not parsed in V1.
 
 ---
 
@@ -72,7 +75,7 @@ enums, no namespaces, no parameter properties) and `import type` for type-only i
 
 ## ADR-004 — Plant generation is deterministic, seeded by the commit hash
 
-**Status:** Planned (Phase 1)
+**Status:** Accepted
 
 **Decision**
 All "random" plant decisions come from a PRNG seeded with a hash of the commit SHA.
