@@ -50,6 +50,8 @@ describe('serializeGarden', () => {
 		assert.deepEqual(model.plants, []);
 		assert.equal(model.summary.plantsDiscovered, 0);
 		assert.equal(model.hasGitHistory, false);
+		assert.equal(model.catalogue.length, 11);
+		assert.ok(model.catalogue.every((species) => species.count === 0 && species.conditionLabel.length > 0));
 		assert.match(model.emptyMessage ?? '', /Nothing planted yet/);
 	});
 
@@ -123,6 +125,15 @@ describe('serializeGarden', () => {
 		for (const achievement of model.achievements) {
 			assert.ok(achievement.progress >= 0 && achievement.progress <= 100, achievement.id);
 		}
+	});
+
+	it('counts collected species by their stable id and includes undiscovered species', () => {
+		const garden = { ...createGarden('p', 'project', NOW), plants: [ghostOrchid,
+			{ ...ghostOrchid, instanceId: 'renamed', name: 'My renamed orchid' }] };
+		const catalogue = serializeGarden(garden).catalogue;
+		assert.equal(catalogue.find((species) => species.id === 'ghost-orchid')?.count, 2);
+		assert.equal(catalogue.find((species) => species.id === 'sprout')?.count, 0);
+		assert.equal(catalogue.reduce((sum, species) => sum + species.count, 0), 2);
 	});
 
 	it('includes the project list for multi root workspaces', () => {

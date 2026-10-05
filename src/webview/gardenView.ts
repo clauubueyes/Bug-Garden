@@ -2,11 +2,13 @@ import * as vscode from 'vscode';
 import { parseInboundMessage, type ExtensionToWebviewMessage } from './messages.ts';
 import { serializeActiveGarden, type ProjectOption } from './gardenSerializer.ts';
 import type { GardenService } from '../garden/gardenService.ts';
+import type { GardenPreferencesStore } from '../storage/gardenPreferences.ts';
 
 export const VIEW_ID = 'bugGarden.gardenView';
 
 export interface GardenViewDependencies {
 	gardenService: GardenService;
+	preferences: GardenPreferencesStore;
 	/** Project whose garden is currently displayed, or null when no folder is open. */
 	getActiveProjectId: () => string | null;
 	getProjects: () => ProjectOption[];
@@ -20,6 +22,7 @@ export interface GardenViewDependencies {
  */
 export class GardenViewProvider implements vscode.WebviewViewProvider {
 	private view: vscode.WebviewView | undefined;
+	private panel: vscode.WebviewPanel | undefined;
 	private readonly subscriptions: vscode.Disposable[] = [];
 	private readonly extensionUri: vscode.Uri;
 	private readonly dependencies: GardenViewDependencies;
@@ -31,14 +34,7 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 
 	resolveWebviewView(view: vscode.WebviewView): void {
 		this.view = view;
-		view.webview.options = {
-			enableScripts: true,
-			localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
-		};
 		this.subscriptions.push(
-			view.webview.onDidReceiveMessage((data: unknown) => {
-				void this.handleMessage(data);
-			}),
 			view.onDidDispose(() => {
 				this.view = undefined;
 			}),
@@ -48,11 +44,34 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 				}
 			}),
 		);
-		view.webview.html = renderShell(view.webview, this.extensionUri);
+		this.configureWebview(view.webview);
+	}
+
+	openPanel(): void {
+		if (this.panel) {
+			this.panel.reveal();
+			return;
+		}
+		this.panel = vscode.window.createWebviewPanel('bugGarden.fullGarden', 'Bug Garden', vscode.ViewColumn.One, {});
+		this.subscriptions.push(this.panel.onDidDispose(() => { this.panel = undefined; }));
+		this.configureWebview(this.panel.webview);
+	}
+
+	private configureWebview(webview: vscode.Webview): void {
+		webview.options = {
+			enableScripts: true,
+			localResourceRoots: [vscode.Uri.joinPath(this.extensionUri, 'media')],
+		};
+		this.subscriptions.push(webview.onDidReceiveMessage((data: unknown) => {
+			void this.handleMessage(data).catch(() => this.send({
+				type: 'garden/notice', message: 'Could not complete that action. Please try again.',
+			}));
+		}));
+		webview.html = renderShell(webview, this.extensionUri);
 	}
 
 	async send(message: ExtensionToWebviewMessage): Promise<void> {
-		await this.view?.webview.postMessage(message);
+		await Promise.all([this.view?.webview.postMessage(message), this.panel?.webview.postMessage(message)]);
 	}
 
 	/** Pushes the current garden, or the empty state when no folder is open. */
@@ -61,10 +80,12 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 		const projects = this.dependencies.getProjects();
 		const payload = serializeActiveGarden(this.dependencies.gardenService, projectId, projects);
 
-		await this.send({ type: 'garden/updated', payload });
+		const preferences = this.dependencies.preferences.get(payload.projectId ?? '');
+		await this.send({ type: 'garden/updated', payload, preferences });
 	}
 
 	dispose(): void {
+		this.panel?.dispose();
 		for (const subscription of this.subscriptions) {
 			subscription.dispose();
 		}
@@ -83,7 +104,39 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 			case 'garden/refresh':
 				await this.dependencies.onRefreshRequested();
 				break;
+			case 'garden/expand':
+				this.openPanel();
+				break;
+			case 'garden/openFolder':
+				await vscode.commands.executeCommand('workbench.action.files.openFolder');
+				break;
+			case 'garden/preferences': {
+				if (!this.dependencies.getProjects().some((project) => project.projectId === message.projectId)) {
+					break;
+				}
+				const ids = new Set(this.dependencies.gardenService.getGarden(message.projectId).plants.map((plant) => plant.instanceId));
+				await this.dependencies.preferences.save(message.projectId, {
+					atmosphere: message.preferences.atmosphere,
+					slots: message.preferences.slots.map((id) => id !== null && ids.has(id) ? id : null),
+				});
+				await this.sendActiveGarden();
+				break;
+			}
+			case 'plant/copyCommit': {
+				if (!this.dependencies.getProjects().some((project) => project.projectId === message.projectId)) {
+					break;
+				}
+				const plant = this.dependencies.gardenService.getGarden(message.projectId).plants.find((entry) => entry.instanceId === message.instanceId);
+				if (plant) {
+					await vscode.env.clipboard.writeText(plant.commitSha);
+					await this.send({ type: 'garden/notice', message: 'Commit hash copied.' });
+				}
+				break;
+			}
 			case 'project/select':
+				if (!this.dependencies.getProjects().some((project) => project.projectId === message.projectId)) {
+					break;
+				}
 				await this.dependencies.onProjectSelected(message.projectId);
 				await this.sendActiveGarden();
 				break;

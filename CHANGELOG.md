@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Illustrated, interactive garden with eleven original species drawings, greenhouse scenery,
+  day/night switching, plant selection, cosmetic watering, drag and drop, and keyboard-friendly
+  arrangement. Plant placement and atmosphere are saved independently for each project.
+- `Bug Garden: Open Full Garden` opens the garden in an editor tab; both views stay in sync.
+- Searchable species collection with rarity filters and unlock hints, milestone details,
+  commit-hash copying, and an actionable empty workspace screen.
+- Browser interaction checks (`npm run test:ui`) using local Chromium, including narrow
+  layouts, persistence, keyboard focus, reduced motion and safe rendering of commit text.
 - Bug Garden view in the Activity Bar, rendered as a webview: garden summary, plant grid with
   rarity colours, and a details panel showing name, rarity, date, commit, project and the
   condition that unlocked it.
