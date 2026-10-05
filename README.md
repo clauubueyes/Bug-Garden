@@ -19,7 +19,7 @@ Current status per roadmap phase:
 - [x] Phase 0 — Project bootstrap (TypeScript, lint, tests, structure)
 - [x] Phase 1 — Garden domain (plants, rarities, deterministic generation)
 - [x] Phase 2 — Git integration (commit detection and bug-fix classification)
-- [ ] Phase 3 — Persistence (per-workspace garden state)
+- [x] Phase 3 — Persistence (per-workspace garden state)
 - [ ] Phase 4 — VS Code UI (Activity Bar, garden webview, plant details)
 - [ ] Phase 5 — Progression (garden level, stats, streak, rarest plant)
 - [ ] Phase 6 — Polish (icons, empty states, personality, achievements)
@@ -95,7 +95,7 @@ Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), plant rules in
   generation. ✅
 - **Phase 2 — Git integration.** Repository detection, commit parsing, bug-fix
   classification, duplicate prevention. ✅
-- **Phase 3 — Persistence.** Garden state per workspace, versioning/migrations.
+- **Phase 3 — Persistence.** Garden state per workspace, versioning/migrations. ✅
 - **Phase 4 — VS Code UI.** Activity Bar container, webview, plant details.
 - **Phase 5 — Progression.** Level, statistics, streak, rarest plant.
 - **Phase 6 — Polish.** Icons, empty states, personality lines, achievements, performance.

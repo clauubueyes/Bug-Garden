@@ -175,7 +175,8 @@ bugGarden.gardens  ->  { version: 1, gardens: { [projectKey]: Garden } }
 - `workspaceState` holds the gardens, so they never touch the user's repository: no
   `.buggarden` file is created and nothing is staged by accident.
 - The payload carries a `version`; `migrations.ts` upgrades older payloads on read, so a
-  future schema change does not lose existing gardens.
+  future schema change does not lose existing gardens. Validation is deliberately tolerant:
+  a malformed plant is dropped with a warning instead of throwing during activation.
 
 ### 6. Extension ↔ webview communication
 
