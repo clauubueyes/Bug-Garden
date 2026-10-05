@@ -23,8 +23,6 @@ export interface RefreshMessage {
 
 export type WebviewToExtensionMessage = GardenReadyMessage | ProjectSelectMessage | RefreshMessage;
 
-const INBOUND_TYPES = ['garden/ready', 'project/select', 'garden/refresh'] as const;
-
 /**
  * Validates anything the webview sends. The webview is the untrusted side of the boundary, so
  * unknown or malformed messages are rejected instead of cast. Selecting a plant needs no round
