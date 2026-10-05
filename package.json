@@ -37,6 +37,12 @@
         "category": "Bug Garden"
       },
       {
+        "command": "bugGarden.openGardenPanel",
+        "title": "Open Full Garden",
+        "category": "Bug Garden",
+        "icon": "$(preview)"
+      },
+      {
         "command": "bugGarden.refreshGarden",
         "title": "Refresh Garden",
         "category": "Bug Garden",
@@ -68,6 +74,7 @@
     "check-types": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
+    "test:ui": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-garden-ui.mjs",
     "check": "npm run check-types && npm run lint && npm run test",
     "vscode:prepublish": "npm run build",
     "package": "npx --yes @vscode/vsce@latest package"

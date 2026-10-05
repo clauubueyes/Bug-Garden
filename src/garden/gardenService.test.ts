@@ -140,6 +140,39 @@ describe('gardenService.scan', () => {
 	});
 });
 
+describe('gardenService.scan achievements', () => {
+	it('returns stats and achievements alongside the garden', async () => {
+		const { service } = serviceWith([commit('a'.repeat(40))]);
+
+		const result = await service.scan(WORKSPACE);
+
+		assert.equal(result.stats.plantsDiscovered, 1);
+		assert.equal(result.stats.bugsFixed, 1);
+		assert.equal(result.achievements.length > 0, true);
+	});
+
+	it('announces an unlock once and never again', async () => {
+		const { service, storage } = serviceWith([commit('a'.repeat(40))]);
+
+		const first = await service.scan(WORKSPACE);
+		const firstIds = first.newlyUnlocked.map((achievement) => achievement.id);
+		assert.ok(firstIds.includes('first-bloom'), firstIds.join(','));
+
+		const second = await service.scan(WORKSPACE);
+		assert.deepEqual(second.newlyUnlocked, []);
+		assert.deepEqual(storage.getUnlockedAchievements(createProjectId(WORKSPACE)).sort(), [...firstIds].sort());
+	});
+
+	it('announces unlocks for a second project independently', async () => {
+		const { service } = serviceWith([commit('a'.repeat(40))]);
+		await service.scan(WORKSPACE);
+
+		const other = await service.scan(`${WORKSPACE}-other`);
+
+		assert.ok(other.newlyUnlocked.some((achievement) => achievement.id === 'first-bloom'));
+	});
+});
+
 describe('gardenService.getGarden', () => {
 	it('creates an empty garden for an unknown project', () => {
 		const { service } = serviceWith([]);

@@ -102,7 +102,24 @@ describe('createStorageService', () => {
 		await service.clear();
 
 		assert.deepEqual(service.getGardens(), []);
-		assert.deepEqual(memento.data[STORAGE_KEY], { version: CURRENT_STORE_VERSION, gardens: {} });
+		assert.deepEqual(memento.data[STORAGE_KEY], {
+			version: CURRENT_STORE_VERSION,
+			gardens: {},
+			unlockedAchievements: {},
+		});
+	});
+
+	it('remembers which achievement unlocks were already announced', async () => {
+		const service = createStorageService(createMemento());
+
+		assert.deepEqual(service.getUnlockedAchievements('p1'), []);
+
+		await service.markAchievementsUnlocked('p1', ['first-bloom']);
+		await service.markAchievementsUnlocked('p1', ['first-bloom', 'bug-squasher']);
+		await service.markAchievementsUnlocked('p1', []);
+
+		assert.deepEqual(service.getUnlockedAchievements('p1'), ['first-bloom', 'bug-squasher']);
+		assert.deepEqual(service.getUnlockedAchievements('p2'), []);
 	});
 
 	it('reports warnings for a corrupted payload and keeps working', () => {

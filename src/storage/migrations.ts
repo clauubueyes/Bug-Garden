@@ -48,7 +48,30 @@ export function migrateStore(raw: unknown): MigrationResult {
 	}
 
 	const gardens = readGardens(payload.gardens, warnings);
-	return { store: { version: CURRENT_STORE_VERSION, gardens }, warnings };
+	return {
+		store: {
+			version: CURRENT_STORE_VERSION,
+			gardens,
+			unlockedAchievements: readUnlockedAchievements(payload.unlockedAchievements),
+		},
+		warnings,
+	};
+}
+
+/** Missing or malformed lists are read as empty: unlocks are announced again, never lost data. */
+function readUnlockedAchievements(value: unknown): Record<string, string[]> {
+	if (!isRecord(value)) {
+		return {};
+	}
+
+	const result: Record<string, string[]> = {};
+	for (const [projectId, ids] of Object.entries(value)) {
+		const achievements = readStringArray(ids);
+		if (achievements.length > 0) {
+			result[projectId] = achievements;
+		}
+	}
+	return result;
 }
 
 function readVersion(payload: Record<string, unknown>): number {
@@ -145,7 +168,7 @@ function readPlant(value: unknown, fallbackProjectId: string): PlantInstance | n
 }
 
 function emptyStore(): GardenStore {
-	return { version: CURRENT_STORE_VERSION, gardens: {} };
+	return { version: CURRENT_STORE_VERSION, gardens: {}, unlockedAchievements: {} };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

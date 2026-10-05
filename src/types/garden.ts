@@ -12,14 +12,19 @@ export interface Garden {
 	lastScannedSha: string | null;
 }
 
+/** Derived from a garden on demand. Never persisted: it must stay recomputable. */
 export interface GardenStats {
 	bugsFixed: number;
 	plantsDiscovered: number;
 	gardenLevel: number;
+	gardenTitle: string;
+	/** Plants still needed for the next level, or null at the top level. */
+	plantsToNextLevel: number | null;
 	currentStreak: number;
 	longestStreak: number;
 	rarestPlant: PlantInstance | null;
 	rarityCounts: Readonly<Record<Rarity, number>>;
+	lastPlantAt: string | null;
 }
 
 export interface GardenSnapshot {

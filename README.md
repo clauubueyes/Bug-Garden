@@ -10,7 +10,10 @@ files and something much rarer takes root.
 Everything runs locally: no source code leaves your machine, and the extension never talks
 to an external service.
 
-<!-- Screenshots and GIFs land here as the UI ships. -->
+The garden is an illustrated landscape with eleven plant species, a greenhouse and day/night
+scenery. Explore it in the sidebar, or open **Bug Garden: Open Full Garden** in an editor tab.
+
+![Illustrated garden with plants grown from real commits](docs/screenshots/garden.png)
 
 ## Features
 
@@ -21,10 +24,10 @@ Current status per roadmap phase:
 - [x] Phase 2 — Git integration (commit detection and bug-fix classification)
 - [x] Phase 3 — Persistence (per-workspace garden state)
 - [x] Phase 4 — VS Code UI (Activity Bar, garden webview, plant details)
-- [ ] Phase 5 — Progression (garden level, stats, streak, rarest plant)
-- [ ] Phase 6 — Polish (icons, empty states, personality, achievements)
+- [x] Phase 5 — Progression (garden level, stats, streak, rarest plant)
+- [x] Phase 6 — Polish (illustrations, interactions, empty states, achievements)
 
-Planned V1 feature set:
+Current features:
 
 - A Bug Garden view in the Activity Bar.
 - One independent garden per workspace/project.
@@ -32,6 +35,11 @@ Planned V1 feature set:
 - A plant catalogue with rarities (Common, Rare, Epic, Legendary).
 - Plant details: name, rarity, date, originating commit, unlock reason.
 - Garden summary: bugs fixed, plants discovered, level, streak, rarest plant.
+- An interactive landscape: explore a plant, water it, drag it to another plot or use
+  **Arrange** to pick a plant and then a destination. Occupied plots swap their plants.
+- Saved plant placement and day/night scenery, independent for each project.
+- A searchable species collection with rarity filters and hints for undiscovered plants.
+- Milestone progress and an expanded editor view alongside the sidebar.
 
 ## Installation
 
@@ -51,13 +59,29 @@ npm install        # install dev dependencies
 npm run build      # compile TypeScript to out/
 npm run watch      # compile on change
 npm test           # run the test suite (Node's built-in runner)
+npm run test:ui    # browser interaction checks and screenshots (local Chrome/Edge)
 npm run lint       # run ESLint
 npm run check      # type-check + lint + tests, in one go
 npm run package    # build and produce bug-garden-<version>.vsix
 ```
 
-Then press <kbd>F5</kbd> in VS Code to launch an Extension Development Host with Bug Garden
-loaded, or install the produced `.vsix` with
+Then select **Run Extension** in VS Code's Run and Debug view and press <kbd>F5</kbd>.
+The Extension Development Host opens this repository through `.vscode/extension-dev.code-workspace`
+with Bug Garden loaded. This separate workspace lets the test window use the same repository
+as the editor window; VS Code otherwise skips a folder that is already open.
+In that window, run **Bug Garden: Open Garden View** from the Command Palette. Existing
+bug-fix commits become plants; **Bug Garden: Refresh Garden** re-scans without duplicates.
+After changing the extension, restart the debug session to load the rebuilt code.
+If an older development window is still open, close that window before pressing <kbd>F5</kbd>
+so VS Code uses the current launch arguments.
+
+For browser-only UI verification, `npm run test:ui` uses eight plants from this repository's real bug-fix history,
+opens an isolated headless Chromium profile, and saves screenshots in `.vscode-test/`.
+Set `BROWSER_PATH` if Chrome, Chromium or Edge is installed in a nonstandard location.
+This checks the webview interactions with a simulated bridge; the VS Code clipboard, editor
+panel and folder picker should also be checked in the Extension Development Host.
+
+You can also install the produced `.vsix` with
 `code --install-extension bug-garden-0.1.0.vsix`.
 
 ## Commands
@@ -65,9 +89,23 @@ loaded, or install the produced `.vsix` with
 | Command                      | Palette title                   | Description                                       |
 | ---------------------------- | ------------------------------- | ------------------------------------------------- |
 | `bugGarden.showGarden`       | `Bug Garden: Open Garden View`  | Focuses the Bug Garden view in the Activity Bar.  |
+| `bugGarden.openGardenPanel`  | `Bug Garden: Open Full Garden`  | Opens the illustrated garden in an editor tab.   |
 | `bugGarden.refreshGarden`    | `Bug Garden: Refresh Garden`    | Re-scans git history and updates every garden.    |
 
 `package.json` is the authoritative list.
+
+## Caring for your garden
+
+**Explore** a plant to see its originating commit and copy its hash. **Water** gives a little
+animated drink; plants, rarity, levels and achievements are earned through bug-fix commits.
+**Arrange** works with clicks or the keyboard: choose a plant, then another plot. Press
+<kbd>Escape</kbd> to cancel. Drag and drop is also available. Gardens with more than twelve
+plants have multiple beds with previous/next controls.
+
+The moon/sun button changes the scenery. Placement and atmosphere survive reloads without
+changing your Git history or earned garden. **Collection** shows discovered and undiscovered
+species, and **Milestones** shows your progress. The interface supports light and dark themes,
+visible keyboard focus, live action feedback and reduced-motion preferences.
 
 ## How it works today
 
@@ -106,8 +144,8 @@ Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), plant rules in
   classification, duplicate prevention. ✅
 - **Phase 3 — Persistence.** Garden state per workspace, versioning/migrations. ✅
 - **Phase 4 — VS Code UI.** Activity Bar container, webview, plant details. ✅
-- **Phase 5 — Progression.** Level, statistics, streak, rarest plant.
-- **Phase 6 — Polish.** Icons, empty states, personality lines, achievements, performance.
+- **Phase 5 — Progression.** Level, statistics, streak, rarest plant. ✅
+- **Phase 6 — Polish.** Illustrated scenes, interactions, empty states, achievements. ✅
 
 ## Contributing
 
