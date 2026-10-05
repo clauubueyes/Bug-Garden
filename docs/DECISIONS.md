@@ -134,7 +134,7 @@ instead of by the compiler.
 
 ## ADR-007 — One garden per workspace folder, keyed by folder URI
 
-**Status:** Planned (Phase 3)
+**Status:** Accepted
 
 **Decision**
 Gardens are keyed by a stable hash of the workspace folder path inside a single

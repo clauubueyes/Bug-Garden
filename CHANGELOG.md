@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Persistence: per-workspace gardens in `workspaceState`, keyed by a normalised workspace
+  folder id, with a versioned store and tolerant validation that drops malformed entries
+  instead of breaking activation.
 - Git integration: repository discovery, bounded `git` process runner, NUL separated log
   parser, bug-fix classifier and a history reader that returns bug fixes oldest first.
 - Duplicate protection: `gardenManager.applyCommits` converts each commit SHA into a plant at
