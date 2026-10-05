@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Bug Garden view in the Activity Bar, rendered as a webview: garden summary, plant grid with
+  rarity colours, and a details panel showing name, rarity, date, commit, project and the
+  condition that unlocked it.
+- Commands `Bug Garden: Open Garden View` and `Bug Garden: Refresh Garden`.
+- Automatic scanning on activation and whenever `.git/HEAD` moves, with a multi-root project
+  selector.
 - Persistence: per-workspace gardens in `workspaceState`, keyed by a normalised workspace
   folder id, with a versioned store and tolerant validation that drops malformed entries
   instead of breaking activation.

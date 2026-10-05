@@ -20,7 +20,7 @@ Current status per roadmap phase:
 - [x] Phase 1 — Garden domain (plants, rarities, deterministic generation)
 - [x] Phase 2 — Git integration (commit detection and bug-fix classification)
 - [x] Phase 3 — Persistence (per-workspace garden state)
-- [ ] Phase 4 — VS Code UI (Activity Bar, garden webview, plant details)
+- [x] Phase 4 — VS Code UI (Activity Bar, garden webview, plant details)
 - [ ] Phase 5 — Progression (garden level, stats, streak, rarest plant)
 - [ ] Phase 6 — Polish (icons, empty states, personality, achievements)
 
@@ -62,12 +62,21 @@ loaded, or install the produced `.vsix` with
 
 ## Commands
 
-| Command                        | Description                            |
-| ------------------------------ | -------------------------------------- |
-| `Bug Garden: Open Garden View` | Focuses the garden view                |
-| `Bug Garden: Refresh Garden`   | Re-scans git history and updates garden |
+| Command                      | Palette title                   | Description                                       |
+| ---------------------------- | ------------------------------- | ------------------------------------------------- |
+| `bugGarden.showGarden`       | `Bug Garden: Open Garden View`  | Focuses the Bug Garden view in the Activity Bar.  |
+| `bugGarden.refreshGarden`    | `Bug Garden: Refresh Garden`    | Re-scans git history and updates every garden.    |
 
-The command list grows with each roadmap phase; `package.json` is the authoritative list.
+`package.json` is the authoritative list.
+
+## How it works today
+
+1. On activation, every workspace folder is checked for a git repository.
+2. `git log` is read (read-only, no shell, no network) and each commit subject is classified.
+3. Bug-fix commits that the garden has not seen become plants, deterministically from the
+   commit hash, and are stored in VS Code's workspace state.
+4. The view refreshes automatically when `.git/HEAD` moves, so committing a fix makes a plant
+   appear without touching anything else.
 
 ## Architecture at a glance
 
@@ -82,7 +91,7 @@ git history ──► commitParser ──► bug-fix classifier ──► plantG
 - `src/git` reads local history and decides what counts as a bug fix.
 - `src/garden` turns a fix into a plant using deterministic, hash-seeded rules.
 - `src/storage` persists each workspace garden in VS Code's own storage.
-- `src/webview` renders the garden.
+- `src/webview` renders the garden; `src/extension.ts` only wires things together.
 
 Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), plant rules in
 [docs/PLANT_SYSTEM.md](docs/PLANT_SYSTEM.md), and the reasoning behind the big choices in
@@ -96,7 +105,7 @@ Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), plant rules in
 - **Phase 2 — Git integration.** Repository detection, commit parsing, bug-fix
   classification, duplicate prevention. ✅
 - **Phase 3 — Persistence.** Garden state per workspace, versioning/migrations. ✅
-- **Phase 4 — VS Code UI.** Activity Bar container, webview, plant details.
+- **Phase 4 — VS Code UI.** Activity Bar container, webview, plant details. ✅
 - **Phase 5 — Progression.** Level, statistics, streak, rarest plant.
 - **Phase 6 — Polish.** Icons, empty states, personality lines, achievements, performance.
 
