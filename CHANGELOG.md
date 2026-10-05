@@ -9,12 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Git integration: repository discovery, bounded `git` process runner, NUL separated log
+  parser, bug-fix classifier and a history reader that returns bug fixes oldest first.
+- Duplicate protection: `gardenManager.applyCommits` converts each commit SHA into a plant at
+  most once, so re-scans and restarts never duplicate plants.
+- HEAD movement tracking with a debounced watcher, ready for the live scan in the UI layer.
 - Plant domain: rarity tiers, the plant catalogue with unlock conditions, and a deterministic
   generator seeded by the commit hash.
 - Commit feature extraction (night window, large/small diff, tests, net removals, typo, hotfix,
   revert, fixup) shared by every plant rule.
 - Seeded PRNG helpers so the same commit always yields the same plant.
 - `docs/PLANT_SYSTEM.md` documenting species, rarities, scoring and selection rules.
+
+### Changed
+
+- Classification reads the commit subject only, and treats `fixup!`, `squash!`, reverts and
+  merge commits as non-fixes so rebases do not spam the garden.
 
 ## [0.1.0] - 2026-10-05
 

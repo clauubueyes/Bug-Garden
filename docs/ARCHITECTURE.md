@@ -29,7 +29,9 @@ src/
     gitCli.ts                  safe `git` process runner (execFile, array args, timeout)
     commitParser.ts            raw `git log` output -> CommitInfo[]
     commitClassifier.ts        CommitInfo -> BugFixSignal (or nothing)
-    commitWatcher.ts           detects HEAD movement in a workspace folder
+    historyReader.ts           git log + parser + classifier -> bug-fix commits
+    headTracker.ts             detects HEAD movement for one repository
+    commitWatcher.ts           VS Code file watcher that drives the head tracker
   garden/
     plantDefinitions.ts        the plant catalogue (single source of truth)
     rarityCalculator.ts        commit features -> rarity score
@@ -82,22 +84,29 @@ src/
 ### 1. Reading history
 
 `gitCli` runs `git` with an argument array (never a shell string), with `cwd` set to the
-workspace folder and a hard timeout. It is the only place that spawns processes.
+workspace folder, `GIT_OPTIONAL_LOCKS=0` (read-only commands must not take the user's index
+lock) and a hard timeout. It is the only place that spawns processes.
 
-`commitParser` consumes `git log --numstat --no-merges --date=iso-strict -z` output and
-produces `CommitInfo`:
+`historyReader` is the service the extension uses. It asks `gitCli` for
+`git log --no-merges --numstat -z --date=iso-strict`, hands the raw output to `commitParser`,
+reverses the result (git returns newest first, a garden grows oldest first) and keeps only
+the commits `commitClassifier` accepts. The reader takes the runner as a parameter, so its
+behaviour is unit tested against fixtures instead of a real repository.
+
+`commitParser` consumes NUL separated records and produces `CommitInfo`:
 
 ```ts
 interface CommitInfo {
     sha: string;          // full 40-char hash, the identity of the commit
-    authorDate: string;   // ISO-8601 UTC
+    authorDate: string;   // ISO-8601 as git reports it, with offset
     subject: string;      // full message first line
-    body: string;
+    body: string;         // empty in V1; the body is not parsed
     filesChanged: number;
     additions: number;
     deletions: number;
     paths: string[];      // repository-relative paths
     hasTests: boolean;    // paths look like tests
+    isMerge: boolean;     // merges never reach the parser (--no-merges)
 }
 ```
 
@@ -106,47 +115,52 @@ in `.env` files are never touched.
 
 ### 2. Deciding what is a bug fix
 
-`commitClassifier` normalises the commit message (lowercase, strip conventional-commit
-type/scope punctuation) and applies keyword rules:
+`commitClassifier` normalises the commit subject (lowercase, strip conventional-commit
+type/scope punctuation) and applies keyword rules. Only the subject is inspected: a commit
+never has to be re-read to be classified, and nothing from the body can smuggle in a
+decision.
 
 | Kind           | Signals                                                        |
 | -------------- | -------------------------------------------------------------- |
 | Fix keyword    | `fix`, `bug`, `hotfix`, `resolve`, `resolved`, `patch`         |
-| Excluded       | `fixup!`, `squash!`, `wip` with no other fix signal, revert-only |
-| Feature keyword| `feat`, `refactor`, `chore`, `docs`, `style`, `test` alone      |
+| Compound type  | `bugfix:` counts as both `bug` and `fix`                       |
+| Excluded       | `fixup!`, `squash!`, reverts, merge commits, empty subjects     |
 
-A commit that only carries a feature keyword is not a bug fix and grows nothing. Merge
-commits are ignored (`--no-merges`), so rebases and PR merges do not spam the garden.
+A commit that only carries a feature keyword (`feat:`, `refactor:`, `chore:`, `docs:`) is not
+a bug fix and grows nothing. Merge commits are excluded at the query level (`--no-merges`), so
+rebases and PR merges do not spam the garden.
 
 ### 3. Generating a plant
 
 `plantGenerator` is a pure function:
 
 ```ts
-generatePlant(commit: CommitInfo): PlantInstance
+generatePlant(commit: CommitInfo, projectId: string): PlantInstance
 ```
 
-- Every random decision is drawn from `mulberry32(seedFor(sha))`, a PRNG seeded with a
-  hash of the commit SHA (plus the garden/project id where isolation matters).
-- `rarityCalculator` turns commit features into a rarity score; `plantGenerator` selects
-  the species from `plantDefinitions` whose `unlockCondition` matches, preferring the
-  rarest eligible species first.
+- Every random decision is drawn from a PRNG seeded with a hash of the commit SHA.
+- `rarityCalculator` turns commit features into a rarity score; `plantGenerator` picks a
+  species from `plantDefinitions` whose `unlockCondition` holds, weighted by `weight`, and
+  steps down a tier when a tier has no eligible species.
 - Special conditions (night fixes, `fix: typo`, test-inclusive fixes, net deletions, large
-  diffs) are expressed as data in `plantDefinitions.ts`, never as magic numbers spread
-  through the code.
+  diffs) are expressed in `plantDefinitions.ts` and `rarityCalculator.ts`, never as magic
+  numbers spread through the code.
 
 See [PLANT_SYSTEM.md](PLANT_SYSTEM.md) for the catalogue and the exact rules.
 
 ### 4. Applying to a garden
 
-`gardenManager` is the only writer of garden state. It enforces the two invariants:
+`gardenManager` is the only writer of garden state. It exposes a pure `applyCommits(garden,
+commits, now)` that returns a new garden plus the plants it granted, enforcing two
+invariants:
 
-- **Idempotency:** a commit SHA already present in the garden is ignored, so re-scanning
+- **Idempotency:** a commit SHA already in `processedCommits` is skipped, so re-scanning
   history or restarting VS Code cannot duplicate plants.
-- **Determinism:** re-processing a commit with the same garden id returns the same plant.
+- **Determinism:** re-processing a commit returns the same plant, because the generator only
+  depends on the commit.
 
-It emits a typed event (`plantDiscovered`) that the extension layer forwards to the webview
-and to the notification layer.
+The extension layer watches `.git/HEAD` through `commitWatcher`, debounces the events, and
+asks `HeadTracker` whether HEAD actually moved before triggering a scan.
 
 ### 5. Persistence
 
