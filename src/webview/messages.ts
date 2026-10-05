@@ -1,24 +1,15 @@
-import type { PlantViewModel, GardenViewModel } from './gardenSerializer.ts';
+import type { GardenViewModel } from './gardenSerializer.ts';
 
 export interface GardenUpdatedMessage {
 	type: 'garden/updated';
 	payload: GardenViewModel;
 }
 
-export interface PlantDiscoveredMessage {
-	type: 'plant/discovered';
-	payload: { plant: PlantViewModel; quip: string | null };
-}
-
-export type ExtensionToWebviewMessage = GardenUpdatedMessage | PlantDiscoveredMessage;
+/** The only message the extension sends in V1: the full garden snapshot. */
+export type ExtensionToWebviewMessage = GardenUpdatedMessage;
 
 export interface GardenReadyMessage {
 	type: 'garden/ready';
-}
-
-export interface PlantSelectMessage {
-	type: 'plant/select';
-	instanceId: string;
 }
 
 export interface ProjectSelectMessage {
@@ -30,42 +21,30 @@ export interface RefreshMessage {
 	type: 'garden/refresh';
 }
 
-export type WebviewToExtensionMessage =
-	| GardenReadyMessage
-	| PlantSelectMessage
-	| ProjectSelectMessage
-	| RefreshMessage;
+export type WebviewToExtensionMessage = GardenReadyMessage | ProjectSelectMessage | RefreshMessage;
 
-const INBOUND_TYPES = ['garden/ready', 'plant/select', 'project/select', 'garden/refresh'] as const;
+const INBOUND_TYPES = ['garden/ready', 'project/select', 'garden/refresh'] as const;
 
 /**
  * Validates anything the webview sends. The webview is the untrusted side of the boundary, so
- * unknown or malformed messages are rejected instead of cast.
+ * unknown or malformed messages are rejected instead of cast. Selecting a plant needs no round
+ * trip: the webview renders the details it already has.
  */
 export function parseInboundMessage(data: unknown): WebviewToExtensionMessage | null {
 	if (typeof data !== 'object' || data === null) {
 		return null;
 	}
 
-	const candidate = data as { type?: unknown; instanceId?: unknown; projectId?: unknown };
-	const type = candidate.type;
-	if (typeof type !== 'string' || !INBOUND_TYPES.includes(type as (typeof INBOUND_TYPES)[number])) {
-		return null;
-	}
-
-	switch (type) {
-		case 'plant/select':
-			return typeof candidate.instanceId === 'string' && candidate.instanceId.length > 0
-				? { type: 'plant/select', instanceId: candidate.instanceId }
-				: null;
-		case 'project/select':
-			return typeof candidate.projectId === 'string' && candidate.projectId.length > 0
-				? { type: 'project/select', projectId: candidate.projectId }
-				: null;
+	const candidate = data as { type?: unknown; projectId?: unknown };
+	switch (candidate.type) {
 		case 'garden/ready':
 			return { type: 'garden/ready' };
 		case 'garden/refresh':
 			return { type: 'garden/refresh' };
+		case 'project/select':
+			return typeof candidate.projectId === 'string' && candidate.projectId.length > 0
+				? { type: 'project/select', projectId: candidate.projectId }
+				: null;
 		default:
 			return null;
 	}

@@ -85,8 +85,6 @@ export class GardenViewProvider implements vscode.WebviewViewProvider {
 				await this.dependencies.onProjectSelected(message.projectId);
 				await this.sendActiveGarden();
 				break;
-			case 'plant/select':
-				break;
 		}
 	}
 }
