@@ -7,6 +7,8 @@ export interface RunGitOptions {
 	cwd: string;
 	timeoutMs?: number;
 	maxBuffer?: number;
+	/** Extra environment variables, merged over `process.env`. */
+	env?: Readonly<Record<string, string>>;
 }
 
 export class GitCommandError extends Error {
@@ -37,6 +39,8 @@ export function runGit(args: readonly string[], options: RunGitOptions): Promise
 				maxBuffer,
 				windowsHide: true,
 				encoding: 'utf8',
+				// Read-only commands must never take the index lock in the user's repository.
+				env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', ...options.env },
 			},
 			(error, stdout) => {
 				if (error) {
@@ -49,10 +53,16 @@ export function runGit(args: readonly string[], options: RunGitOptions): Promise
 	});
 }
 
-/** Resolves the repository root for a folder, or null when it is not a git repository. */
-export async function findRepositoryRoot(cwd: string): Promise<string | null> {
+/**
+ * Resolves the repository root for a folder, or null when it is not a git repository.
+ * `ceilingDirectory` is an optional boundary passed to `GIT_CEILING_DIRECTORIES`, which stops
+ * discovery before it walks above that folder. Production callers leave it out so monorepo
+ * subfolders still resolve to the repository that contains them.
+ */
+export async function findRepositoryRoot(cwd: string, ceilingDirectory?: string): Promise<string | null> {
 	try {
-		const root = await runGit(['rev-parse', '--show-toplevel'], { cwd });
+		const env = ceilingDirectory ? { GIT_CEILING_DIRECTORIES: ceilingDirectory } : {};
+		const root = await runGit(['rev-parse', '--show-toplevel'], { cwd, env });
 		const trimmed = root.trim();
 		return trimmed.length > 0 ? trimmed : null;
 	} catch {
