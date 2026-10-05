@@ -36,17 +36,21 @@ src/
     plantDefinitions.ts        the plant catalogue (single source of truth)
     rarityCalculator.ts        commit features -> rarity score
     plantGenerator.ts          commit features + rarity -> PlantInstance (deterministic)
-    gardenManager.ts           applies plants to a garden, dedupes, emits events
-    gardenStats.ts             level, streak, rarest plant
+    gardenManager.ts           applies plants to a garden, dedupes by commit sha
+    gardenStats.ts             Garden + plants -> levels, streaks, rarest plant
+    achievements.ts            progress-based achievement definitions and evaluation
+    gardenService.ts           scan -> garden -> storage, plus stats and fresh unlocks
   storage/
     storageService.ts          typed read/write over vscode Memento + JSON versioning
     migrations.ts              schema version upgrades
-  humor/
-    quips.ts                   personality strings, purely cosmetic
+    projectKey.ts              workspace path -> stable project id
+  notifications/
+    notifier.ts                status bar, toasts and the output channel
   webview/
     gardenView.ts              WebviewViewProvider (panel + message handling)
     gardenSerializer.ts        snapshot -> view model payload
-    media/                     webview html/css/js assets
+    messages.ts                the extension <-> webview protocol and its validator
+media/                           webview html/css/js assets (shipped as-is)
 ```
 
 ## Data flow
@@ -168,24 +172,47 @@ asks `HeadTracker` whether HEAD actually moved before triggering a scan.
 `ExtensionContext.workspaceState`, under a key derived from the workspace folder URI:
 
 ```text
-bugGarden.gardens  ->  { version: 1, gardens: { [projectKey]: Garden } }
+  bugGarden.gardens  ->  { version: 1, gardens: { [projectId]: Garden },
+                          unlockedAchievements: { [projectId]: string[] } }
 ```
 
-- `globalState` holds cross-workspace settings and aggregate achievements.
 - `workspaceState` holds the gardens, so they never touch the user's repository: no
-  `.buggarden` file is created and nothing is staged by accident.
+  `.buggarden` file is created and nothing is staged by accident. Nothing is stored in
+  `globalState` in V1.
+- `projectId` is the workspace folder path, normalised (`projectKey.ts`) and used verbatim as
+  the object key. It is not a hash: it stays readable in the output channel and in the stored
+  payload, which matters more than saving a few bytes.
 - The payload carries a `version`; `migrations.ts` upgrades older payloads on read, so a
   future schema change does not lose existing gardens. Validation is deliberately tolerant:
   a malformed plant is dropped with a warning instead of throwing during activation.
 
-### 6. Extension ↔ webview communication
+### 6. Progression
+
+Levels, streaks and achievements are **derived, never stored**. `gardenStats.calculateStats`
+turns a `Garden` into the numbers the UI shows, and `achievements.evaluateAchievements` turns
+those numbers into achievement progress. Both are pure functions of the plants a garden already
+holds, so a garden can never end up with an achievement the plants do not justify, and deleting
+a garden deletes its progression with it.
+
+Streaks are runs of consecutive UTC days containing at least one bug fix; two fixes on the same
+day extend the run instead of starting a new one, and a run stays alive for one day of silence.
+
+Achievement progress is percentages computed from the same inputs. What *is* stored is only
+`unlockedAchievements`, the list of unlock ids already announced per project, so a notification
+is never repeated while the achievement itself is always recomputed.
+
+### 7. Extension ↔ webview communication
 
 `gardenView` owns a `WebviewView` in the `bugGarden` Activity Bar container.
 
-- Extension → webview: `webview.postMessage({ type: 'garden/updated', payload })` with a
-  plain snapshot produced by `gardenSerializer` (no VS Code types cross the boundary).
-- Webview → extension: `onDidReceiveMessage` handles a small, explicit protocol
-  (`garden/ready`, `plant/select`, `garden/refresh`, `garden/command`) validated with a type
-  guard. Anything unknown is ignored.
-- All HTML is generated with escaped strings; the webview loads only local resources with a
-  per-session nonce and a strict Content Security Policy.
+- Extension → webview: one message, `webview.postMessage({ type: 'garden/updated', payload })`,
+  carrying the plain snapshot built by `gardenSerializer` (no VS Code types cross the
+  boundary). The payload holds the plant list, the summary (level, title, progress, streaks,
+  rarest plant, rarity counts), the project list and the achievements.
+- Webview → extension: `onDidReceiveMessage` accepts exactly three messages, `garden/ready`,
+  `garden/refresh` and `project/select`, validated by `parseInboundMessage`. Anything unknown or
+  malformed is dropped. Selecting a plant needs no round trip: the webview renders the details
+  it already has, so the protocol never carries a message it could have answered locally.
+- The webview builds DOM nodes and sets `textContent`; commit subjects and plant names are
+  never interpolated as HTML. It loads only local resources with a per-session nonce and a
+  strict Content Security Policy.
