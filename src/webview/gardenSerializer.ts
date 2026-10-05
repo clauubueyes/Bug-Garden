@@ -22,9 +22,15 @@ export interface GardenSummaryViewModel {
 	plantsDiscovered: number;
 }
 
-export interface GardenViewModel {
+export interface ProjectOption {
 	projectId: string;
 	projectName: string;
+}
+
+export interface GardenViewModel {
+	projectId: string | null;
+	projectName: string;
+	projects: ProjectOption[];
 	plants: PlantViewModel[];
 	summary: GardenSummaryViewModel;
 	hasGitHistory: boolean;
@@ -36,7 +42,7 @@ export interface GardenViewModel {
  * VS Code, and the output only contains primitives, so the webview never has to guard against
  * missing data. Plants are ordered newest first, which is how the garden is displayed.
  */
-export function serializeGarden(garden: Garden): GardenViewModel {
+export function serializeGarden(garden: Garden, projects: readonly ProjectOption[] = []): GardenViewModel {
 	const plants = [...garden.plants]
 		.sort((a, b) => timestampOf(b) - timestampOf(a))
 		.map((plant) => serializePlant(plant, garden.projectName));
@@ -44,10 +50,23 @@ export function serializeGarden(garden: Garden): GardenViewModel {
 	return {
 		projectId: garden.projectId,
 		projectName: garden.projectName,
+		projects: projects.map((project) => ({ ...project })),
 		plants,
 		summary: { plantsDiscovered: plants.length },
 		hasGitHistory: garden.processedCommits.length > 0,
 		emptyMessage: plants.length === 0 ? 'Nothing planted yet. Fix a bug and commit it.' : null,
+	};
+}
+
+export function createEmptyViewModel(projects: readonly ProjectOption[] = []): GardenViewModel {
+	return {
+		projectId: null,
+		projectName: '',
+		projects: projects.map((project) => ({ ...project })),
+		plants: [],
+		summary: { plantsDiscovered: 0 },
+		hasGitHistory: false,
+		emptyMessage: 'Open a folder to start a garden.',
 	};
 }
 

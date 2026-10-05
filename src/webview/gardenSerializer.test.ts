@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { formatDate, serializeGarden, serializePlant } from './gardenSerializer.ts';
+import { createEmptyViewModel, formatDate, serializeGarden, serializePlant } from './gardenSerializer.ts';
 import { createGarden } from '../garden/gardenManager.ts';
 import type { PlantInstance } from '../types/plant.ts';
 
@@ -77,6 +77,30 @@ describe('serializeGarden', () => {
 		assert.equal(model.summary.plantsDiscovered, 2);
 		assert.equal(model.hasGitHistory, true);
 		assert.equal(model.emptyMessage, null);
+	});
+
+	it('includes the project list for multi root workspaces', () => {
+		const model = serializeGarden(createGarden('p', 'project', NOW), [
+			{ projectId: 'p', projectName: 'project' },
+			{ projectId: 'other', projectName: 'other-project' },
+		]);
+
+		assert.deepEqual(model.projects, [
+			{ projectId: 'p', projectName: 'project' },
+			{ projectId: 'other', projectName: 'other-project' },
+		]);
+	});
+});
+
+describe('createEmptyViewModel', () => {
+	it('describes a workspace with no folder open', () => {
+		const model = createEmptyViewModel([{ projectId: 'p', projectName: 'project' }]);
+
+		assert.equal(model.projectId, null);
+		assert.deepEqual(model.plants, []);
+		assert.equal(model.summary.plantsDiscovered, 0);
+		assert.equal(model.projects.length, 1);
+		assert.match(model.emptyMessage ?? '', /Open a folder/);
 	});
 });
 
