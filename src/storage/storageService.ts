@@ -13,6 +13,8 @@ export interface StorageService {
 	getGardens(): Garden[];
 	saveGarden(garden: Garden): Promise<void>;
 	deleteGarden(projectId: string): Promise<void>;
+	getUnlockedAchievements(projectId: string): string[];
+	markAchievementsUnlocked(projectId: string, achievementIds: readonly string[]): Promise<void>;
 	clear(): Promise<void>;
 	getWarnings(): readonly string[];
 }
@@ -66,9 +68,21 @@ export function createStorageService(
 			delete gardens[projectId];
 			await write({ ...current, gardens });
 		},
+		getUnlockedAchievements: (projectId) => read().unlockedAchievements[projectId] ?? [],
+		markAchievementsUnlocked: async (projectId, achievementIds) => {
+			if (achievementIds.length === 0) {
+				return;
+			}
+			const current = read();
+			const merged = [...new Set([...(current.unlockedAchievements[projectId] ?? []), ...achievementIds])];
+			await write({
+				...current,
+				unlockedAchievements: { ...current.unlockedAchievements, [projectId]: merged },
+			});
+		},
 		clear: async () => {
 			warnings = [];
-			await write({ version: CURRENT_STORE_VERSION, gardens: {} });
+			await write({ version: CURRENT_STORE_VERSION, gardens: {}, unlockedAchievements: {} });
 		},
 		getWarnings: () => warnings,
 	};

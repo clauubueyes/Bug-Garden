@@ -42,7 +42,11 @@ function gardenPayload(overrides: Record<string, unknown> = {}): Record<string, 
 describe('migrateStore', () => {
 	it('returns an empty store when nothing is stored', () => {
 		const result = migrateStore(undefined);
-		assert.deepEqual(result.store, { version: CURRENT_STORE_VERSION, gardens: {} });
+		assert.deepEqual(result.store, {
+			version: CURRENT_STORE_VERSION,
+			gardens: {},
+			unlockedAchievements: {},
+		});
 		assert.deepEqual(result.warnings, []);
 	});
 
